@@ -75,6 +75,7 @@ def parse_season(season: int, raw: Path):
                 "innings_sched": int(info.get("innings", "9") or 9),
                 "gametype": info.get("gametype", "regular") or "regular",
                 "htbf": info.get("htbf", "false") == "true",
+                "site": info.get("site", ""),
                 "tiebreaker_base": int(info.get("tiebreaker", "0") or 0),
                 "parse_error": g.error,
                 "p_vis": g.final[0], "p_home": g.final[1],
@@ -141,7 +142,7 @@ def build(raw: Path, out: Path, first: int, last: int, workers: int = 4) -> dict
     games["exclude_reason"] = reason
     games["included"] = reason == ""
     games["home_win"] = (games["p_home"] > games["p_vis"]).astype(np.int8)
-    games.to_parquet(out / "games.parquet", index=False)
+    games.to_parquet(out / "games_base.parquet", index=False)   # wp.validate adds checks -> games.parquet
     states.to_parquet(out / "states.parquet", index=False)
     summary = {
         "seasons": f"{min(years)}-{max(years)}",
@@ -165,6 +166,12 @@ def main() -> None:
     a = ap.parse_args()
     s = build(a.raw, a.out, a.first, a.last)
     (a.out / "build_summary.json").write_text(json.dumps(s, indent=1))
+    from .manifest import check_fresh, code_files, write_meta
+    man = a.raw / "download_manifest.json"
+    check_fresh(man)
+    write_meta([a.out / f for f in ("games_base.parquet", "states.parquet", "gamelogs.parquet",
+                                    "build_summary.json")],
+               [man], "games", code_files("games", "retro_parse"))
     print(json.dumps(s, indent=1))
 
 

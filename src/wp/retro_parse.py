@@ -367,7 +367,8 @@ def check_pitches(pitches: str, count_field: str, cat: str) -> str | None:
 
 
 EVENT_COLS = ("pa", "inning", "half", "outs", "bases", "vis", "home", "cat", "batting",
-              "outs_after", "bases_after", "runs", "count", "pitches")
+              "outs_after", "bases_after", "runs", "count", "pitches",
+              "batter", "pitcher", "slot", "starter")   # starter: starting pitcher of the fielding team
 
 
 @dataclass
@@ -402,6 +403,8 @@ def parse_game(lines: list[str], game_id: str) -> ParsedGame:
     g = ParsedGame(game_id, info, states, (0, 0), 1, 0, 0)
     diag = g.diag
     lineup = {0: {}, 1: {}}       # team -> {slot: player}
+    pitcher = {0: None, 1: None}  # team -> current pitcher id
+    starter = {0: None, 1: None}  # team -> starting pitcher id
     slot_of = {0: {}, 1: {}}      # team -> {player: slot}
     next_slot = {0: 1, 1: 1}
     pa_idx = -1
@@ -426,6 +429,10 @@ def parse_game(lines: list[str], game_id: str) -> ParsedGame:
             p = rest.split(",")
             # start/sub,<id>,"<name>",<team>,<batting slot>,<fielding pos>  (name may contain commas)
             pid, team, slot, pos = p[0], int(p[-3]), int(p[-2]), int(p[-1])
+            if pos == 1:                         # fielding position 1 = pitcher (also with DH, slot 0)
+                pitcher[team] = pid
+                if rec == "start":
+                    starter[team] = pid
             if slot == 0:
                 continue
             old = lineup[team].get(slot)
@@ -492,7 +499,8 @@ def parse_game(lines: list[str], game_id: str) -> ParsedGame:
             runs = st.score[team] - runs_before
             g.half_runs[cur_half] = g.half_runs.get(cur_half, 0) + runs
             g.events.append((pa_idx, *before, cat, batting, st.outs, st.base_bits(), runs,
-                             cnt, pitches))
+                             cnt, pitches, batter, pitcher[1 - team], pa_batter_slot or 0,
+                             starter[1 - team]))
             # team event counts (for game-log box-score comparison)
             for t in split_top(first, "+"):
                 c2 = event_category(t) if t else ""

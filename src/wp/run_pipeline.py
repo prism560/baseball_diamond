@@ -59,6 +59,10 @@ def main() -> None:
     ap.add_argument("--reports", type=Path, default=Path("reports"))
     ap.add_argument("--models", type=Path, default=Path("models"))
     a = ap.parse_args()
+    from .manifest import check_fresh, code_files, write_meta
+    ins = [a.processed / f for f in ("games.parquet", "gamelogs.parquet", "states.parquet")]
+    for f in ins:
+        check_fresh(f)
     timings = {}
     t0 = time.time()
     games, gl, st = load(a.processed)
@@ -215,6 +219,12 @@ def main() -> None:
     timings["total_s"] = round(time.time() - t0, 1)
     out["timings"] = timings
     (a.reports / "results.json").write_text(json.dumps(out, indent=1, default=float))
+    outs = [a.reports / "results.json", a.reports / "figures" / "calibration_b0_b1.png",
+            a.models / "wp_table_b0.parquet", a.models / "wp_table_b0_monotone.parquet",
+            a.models / "b1_coef.json", a.models / "elo_params.json"] + \
+           [a.models / f"wp_table_b0_train_lt{Sx}.parquet" for Sx in a.eval]
+    write_meta(outs, ins, "run_pipeline",
+               code_files("run_pipeline", "b0_table", "b1_model", "elo", "evaluate", "states"))
     print(json.dumps(timings))
 
 

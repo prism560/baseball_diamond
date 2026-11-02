@@ -14,8 +14,8 @@
 
 - **출처**: Retrosheet 이벤트 파일·게임로그. retrosheet.org는 작업 환경에서 접속이 차단되어, Chadwick Baseball Bureau가 관리하는 GitHub 미러 `chadwickbureau/retrosheet`(master 브랜치)에서 받았다. 상세는 `docs/DATA_SOURCES.md`.
 - **파싱**: Retrosheet가 제공하는 파싱된 CSV는 사이트 차단으로 확인하지 못했고, Chadwick(C) 빌드는 환경 정책상 외부 코드 컴파일이 막혀 사용하지 못했다. 그래서 이벤트 파일 문법(retrosheet.org/eventfile.htm)을 따라 순수 파이썬 파서(`src/wp/retro_parse.py`)를 작성했고, **모든 경기의 파싱 최종 점수를 게임로그와 대조**해 검증했다.
-- 다운로드: 1901–2025 게임로그, 이벤트 파일 1908–2025 (1901–1907은 플레이 기록 없음, 게임로그만 Elo 워밍업에 사용). 원본 1,086 MB, 다운로드 60.1 초.
-- 이벤트 파일 경기 199,897개, 타석 시작 상태 15,354,641개, 파싱+가공 103.6 초 (4코어).
+- 다운로드: 1901–2025 게임로그, 이벤트 파일 1908–2025 (1901–1907은 플레이 기록 없음, 게임로그만 Elo 워밍업에 사용). 원본 1,090 MB, 다운로드 71.7 초.
+- 이벤트 파일 경기 199,897개, 타석 시작 상태 15,354,641개, 파싱+가공 111.5 초 (4코어).
 - 분석 포함 경기 196,411개, 포함 상태 15,114,465개.
 
 ### 제외 경기
@@ -219,18 +219,18 @@
 
 | 단계 | 초 |
 |---|---:|
-| 다운로드 (1901–2025) | 60.1 |
-| 이벤트 파싱 + 게임로그 결합 | 103.6 |
-| 파이프라인: load_s | 14.6 |
-| 파이프라인: elo_tune_and_run_s | 26.5 |
+| 다운로드 (1901–2025) | 71.7 |
+| 이벤트 파싱 + 게임로그 결합 | 111.5 |
+| 파이프라인: load_s | 15.9 |
+| 파이프라인: elo_tune_and_run_s | 23.3 |
 | 파이프라인: b0_counts_s | 1.0 |
 | 파이프라인: final_table_fit_s | 0.1 |
-| 파이프라인: total_s | 60.2 |
+| 파이프라인: total_s | 58.1 |
 
 | 파일 | 크기 |
 |---|---:|
 | `data/processed/states.parquet` | 23.12 MB |
-| `data/processed/games.parquet` | 2.55 MB |
+| `data/processed/games.parquet` | 2.56 MB |
 | `data/processed/gamelogs.parquet` | 2.10 MB |
 | `models/wp_table_b0.parquet` | 0.37 MB |
 | `models/wp_table_b0_monotone.parquet` | 0.45 MB |

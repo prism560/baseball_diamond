@@ -67,6 +67,11 @@ def build_pa_table(events: pd.DataFrame) -> pd.DataFrame:
     ba = events["bases_after"].to_numpy()
     runs = events["runs"].to_numpy()
     pit = events["pitches"].astype(str).to_numpy()
+    has_ids = "batter" in events
+    bt = events["batter"].astype(str).to_numpy() if has_ids else np.full(len(events), "")
+    pt = events["pitcher"].astype(str).to_numpy() if has_ids else np.full(len(events), "")
+    sl = events["slot"].to_numpy() if has_ids else np.zeros(len(events), int)
+    sp = events["starter"].astype(str).to_numpy() if has_ids else np.full(len(events), "")
 
     key = np.empty(len(events), dtype=object)
     starts = np.flatnonzero(np.r_[True, (gid[1:] != gid[:-1]) | (pa[1:] != pa[:-1])])
@@ -86,12 +91,14 @@ def build_pa_table(events: pd.DataFrame) -> pd.DataFrame:
             i += 1
         mid = []
         if o1 >= 3:
-            rows.append((gid[s], h, inn[s], o0, b0, d0, 3, 0, rN, -1, 3, 0, 0, "", ""))
+            rows.append((gid[s], h, inn[s], o0, b0, d0, 3, 0, rN, -1, 3, 0, 0, "", "",
+                         bt[s], pt[s], sl[s], sp[s]))
             continue
         if i >= e:
             # PA consisted only of N lines without ending the half (e.g. data where the
             # batter changes mid-PA); treat as INT with no pitches
-            rows.append((gid[s], h, inn[s], o0, b0, d0, o1, b1, rN, O_IDX["INT"], o1, b1, 0, "", ""))
+            rows.append((gid[s], h, inn[s], o0, b0, d0, o1, b1, rN, O_IDX["INT"], o1, b1, 0, "", "",
+                         bt[s], pt[s], sl[s], sp[s]))
             continue
         r2 = 0
         o2, b2 = o1, b1
@@ -108,9 +115,16 @@ def build_pa_table(events: pd.DataFrame) -> pd.DataFrame:
             o = O_IDX["OUT"]  # unknown batting category (none expected)
         if o2 >= 3:
             b2 = 0
-        rows.append((gid[s], h, inn[s], o0, b0, d0, o1, b1, rN, o, o2, b2, r2, pit[e - 1], "|".join(mid)))
+        # batter/pitcher of the PA = those on the line that ended it (a pinch hitter or reliever
+        # entering mid-PA is the one charged); slot = lineup slot at PA start
+        rows.append((gid[s], h, inn[s], o0, b0, d0, o1, b1, rN, o, o2, b2, r2, pit[e - 1], "|".join(mid),
+                     bt[e - 1], pt[e - 1], sl[s], sp[s]))
     df = pd.DataFrame(rows, columns=["game_id", "half", "inning", "outs0", "bases0", "diff0", "outs1",
-                                     "bases1", "rN", "o", "outs2", "bases2", "r2", "pitches", "mid"])
+                                     "bases1", "rN", "o", "outs2", "bases2", "r2", "pitches", "mid",
+                                     "batter", "pitcher", "slot", "starter"])
+    for c in ("batter", "pitcher", "starter"):
+        df[c] = df[c].astype("category")
+    df["slot"] = df["slot"].astype(np.int8)
     for c in ("half", "outs0", "bases0", "outs1", "bases1", "rN", "outs2", "bases2", "r2"):
         df[c] = df[c].astype(np.int8)
     df["o"] = df["o"].astype(np.int8)
@@ -235,3 +249,29 @@ def estimate(pa: pd.DataFrame, seasons, k: float = 5.0) -> Transitions:
                 if q[s_, o, b].sum() == 0:
                     q[s_, o, b, O_IDX["OUT"]] = 1.0
     return Transitions(N, q, A, D, sorted(int(x) for x in set(seasons)), int(len(d)))
+
+
+def main() -> None:
+    """Build data/processed/pa.parquet (seasons >= --from) from the validated events."""
+    import argparse
+    from pathlib import Path
+
+    from .manifest import check_fresh, code_files, write_meta
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--processed", type=Path, default=Path("data/processed"))
+    ap.add_argument("--from", dest="first", type=int, default=2000)
+    a = ap.parse_args()
+    evp, gp = a.processed / "events.parquet", a.processed / "games.parquet"
+    check_fresh(evp)
+    check_fresh(gp)
+    ev = pd.read_parquet(evp)
+    ev = ev[ev["game_id"].str[3:7].astype(int) >= a.first]
+    pa = build_pa_table(ev)
+    out = a.processed / "pa.parquet"
+    pa.to_parquet(out, index=False)
+    write_meta([out], [evp, gp], "transitions", code_files("transitions", "retro_parse"))
+    print(f"pa rows {len(pa):,}")
+
+
+if __name__ == "__main__":
+    main()

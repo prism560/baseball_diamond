@@ -212,7 +212,7 @@ ERAS = [(1908, 1949), (1950, 1987), (1988, 1999), (2000, 2019), (2021, 2025)]
 def apply_exclusions(processed: Path, val: pd.DataFrame) -> dict:
     """Add validation failures to games.parquet as exclusion reasons (only for
     games not already excluded) and return summary tables."""
-    games = pd.read_parquet(processed / "games.parquet")
+    games = pd.read_parquet(processed / "games_base.parquet")
     for c in ("exclude_reason_pre_validation",):
         if c not in games:
             games[c] = games["exclude_reason"]
@@ -259,6 +259,8 @@ def main() -> None:
     ap.add_argument("--events-from", type=int, default=1990)
     ap.add_argument("--workers", type=int, default=4)
     a = ap.parse_args()
+    from .manifest import check_fresh
+    check_fresh(a.processed / "games_base.parquet")
     t0 = time.time()
     years = [y for y in range(a.first, a.last + 1) if any((a.raw / str(y)).glob("*.EV?"))]
     vparts, eparts, pv, pstats = [], [], [], []
@@ -305,6 +307,11 @@ def main() -> None:
     ps["violation_rate"] = ps["pitch_rule_violations"] / ps["with_pitches"].clip(lower=1)
     summ["pitch_sequences_by_season"] = ps.to_dict(orient="records")
     (a.processed / "validation_summary.json").write_text(json.dumps(summ, indent=1, ensure_ascii=False))
+    from .manifest import code_files, write_meta
+    write_meta([a.processed / f for f in ("games.parquet", "validation.parquet", "events.parquet",
+                                          "pitch_viol.parquet", "validation_summary.json")],
+               [a.processed / "games_base.parquet", a.raw / "download_manifest.json"], "validate",
+               code_files("validate", "retro_parse"))
     print(json.dumps(summ, indent=1, ensure_ascii=False))
 
 

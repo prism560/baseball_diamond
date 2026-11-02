@@ -68,6 +68,11 @@ def season(year: int, out: Path) -> dict:
         if n > 0:
             info["event_files"] += 1
             info["bytes"] += n
+        # roster file: id,last,first,bats,throws,team,pos  (Retrosheet roster format)
+        rn = save(f"{MIRROR}/{year}/{tm}{year}.ROS", d / f"{tm}{year}.ROS")
+        if rn > 0:
+            info["roster_files"] = info.get("roster_files", 0) + 1
+            info["bytes"] += rn
     gl = save(f"{MIRROR}/{year}/GL{year}.TXT", d / f"GL{year}.TXT")
     if gl < 0:
         gl = save(f"{MIRROR}/{year}/gl{year}.txt", d / f"GL{year}.TXT")
@@ -90,6 +95,8 @@ def main() -> None:
     summary = {"seasons": res, "total_bytes": sum(r.get("bytes", 0) for r in res),
                "seconds": round(time.time() - t0, 1)}
     (a.out / "download_manifest.json").write_text(json.dumps(summary, indent=1))
+    from .manifest import code_files, write_meta
+    write_meta([a.out / "download_manifest.json"], [], "download", code_files("download"))
     print(f"downloaded {summary['total_bytes']/1e6:.1f} MB in {summary['seconds']} s")
 
 

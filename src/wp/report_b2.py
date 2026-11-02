@@ -35,6 +35,9 @@ def merged(rA, rB):
 
 
 def main() -> None:
+    from .manifest import check_fresh
+    for f in ("reports/b2_results.json", "data/processed/validation_summary.json"):
+        check_fresh(ROOT / f)
     r = json.loads((ROOT / "reports/b2_results.json").read_text())
     v = json.loads((ROOT / "data/processed/validation_summary.json").read_text())
     L = []

@@ -71,6 +71,10 @@ def calib_table(cal: dict, season: str) -> str:
 
 
 def main() -> None:
+    from .manifest import check_fresh
+    for f in ("reports/results.json", "data/processed/build_summary.json",
+              "data/processed/validation_summary.json", "data/raw/download_manifest.json"):
+        check_fresh(ROOT / f)
     res = json.loads((ROOT / "reports/results.json").read_text())
     build = json.loads((ROOT / "data/processed/build_summary.json").read_text())
     vs = json.loads((ROOT / "data/processed/validation_summary.json").read_text())

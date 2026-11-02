@@ -111,6 +111,10 @@ def main() -> None:
     ap.add_argument("--reports", type=Path, default=Path("reports"))
     ap.add_argument("--models", type=Path, default=Path("models"))
     a = ap.parse_args()
+    from .manifest import check_fresh, code_files, write_meta
+    ins = [a.processed / f for f in ("games.parquet", "gamelogs.parquet", "states.parquet", "pa.parquet")]
+    for f in ins:
+        check_fresh(f)
     t_all = time.time()
     a.reports.mkdir(parents=True, exist_ok=True)
     a.models.mkdir(parents=True, exist_ok=True)
@@ -120,14 +124,8 @@ def main() -> None:
     # ---------- data ----------
     t = time.time()
     games, gl, st = load_states(a.processed)
-    pa_path = a.processed / "pa.parquet"
-    if pa_path.exists():
-        pa = pd.read_parquet(pa_path)
-    else:
-        ev = pd.read_parquet(a.processed / "events.parquet")
-        ev = ev[ev["game_id"].str[3:7].astype(int) >= 2000]
-        pa = T.build_pa_table(ev)
-        pa.to_parquet(pa_path, index=False)
+    pa_path = a.processed / "pa.parquet"     # built by `python -m wp.transitions`
+    pa = pd.read_parquet(pa_path)
     inc = set(games.loc[games["included"], "game_id"])
     pa = pa[pa["game_id"].isin(inc)].reset_index(drop=True)
     # recompute n_next on the filtered table (positions changed)
@@ -375,6 +373,9 @@ def main() -> None:
     timings["total_s"] = round(time.time() - t_all, 1)
     out["timings"] = timings
     (a.reports / "b2_results.json").write_text(json.dumps(out, indent=1, default=float))
+    write_meta([a.reports / "b2_results.json", a.models / "wp_b2_pa.parquet", a.models / "wp_b2_pitch.parquet"],
+               ins, "run_b2", code_files("run_b2", "dp", "transitions", "count_chain", "evaluate", "b0_table",
+                                         "b1_model", "elo", "states", "run_pipeline"))
     print(json.dumps(timings))
 
 

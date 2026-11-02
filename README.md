@@ -18,9 +18,17 @@
 
 ## 실행
 
+모든 단계는 `Makefile`에 의존성과 함께 정의되어 있다. 각 산출물 옆의 `*.meta.json`에는 입력·코드 해시가 기록된다. 다음 단계와 리포트 생성기는 입력이 바뀌었는데 다시 만들지 않은 산출물을 발견하면 실패한다(`src/wp/manifest.py`).
+
 ```bash
 pip install -r requirements.txt
 ```
+
+```bash
+make all
+```
+
+개별 단계로 실행하려면 다음과 같다.
 
 ```bash
 PYTHONPATH=src python -m wp.download --first 1901 --last 2025
