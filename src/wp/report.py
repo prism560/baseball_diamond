@@ -18,6 +18,12 @@ REASON_KO = {
     "home_bats_first": "홈팀 선공 경기",
     "parse_error": "파서 오류",
     "not_in_gamelog": "게임로그에 없음",
+    "validation:pitch_sequence_violation": "0절 검증: 투구 시퀀스 위반",
+    "validation:batting_order_break": "0절 검증: 타순 연속성 끊김",
+    "validation:three_out_violation": "0절 검증: 3아웃 위반",
+    "validation:lob_mismatch": "0절 검증: 잔루 불일치",
+    "validation:linescore_mismatch": "0절 검증: 이닝별 득점 불일치",
+    "validation:parser_repair": "0절 검증: 파서 보정 발생",
 }
 MODEL_KO = {"B0": "B0", "B1": "B1", "Elo_only": "Elo만", "B0_mono": "B0(단조 투영)",
             "B0_recent": "B0(최근 30시즌만)"}
@@ -67,6 +73,9 @@ def calib_table(cal: dict, season: str) -> str:
 def main() -> None:
     res = json.loads((ROOT / "reports/results.json").read_text())
     build = json.loads((ROOT / "data/processed/build_summary.json").read_text())
+    vs = json.loads((ROOT / "data/processed/validation_summary.json").read_text())
+    build["excluded_by_reason"] = vs["excluded_by_reason_after_validation"]
+    build["games_included"] = vs["games_included_after_validation"]
     manifest = json.loads((ROOT / "data/raw/download_manifest.json").read_text())
     ft = res["final_table"]
     L = []
@@ -112,9 +121,9 @@ def main() -> None:
     for k, v in build["excluded_by_reason"].items():
         A(f"| {REASON_KO.get(k, k)} | {v:,} |")
     A(f"| **합계** | **{sum(build['excluded_by_reason'].values()):,}** |\n")
-    A("사유는 위에서부터 우선순위로 하나만 붙인다(예: 2020년 7이닝 더블헤더는 '2020 단축 시즌'으로 집계). "
-      "점수 불일치는 주로 `1XH(82)(E2/TH)`처럼 오류와 아웃이 함께 기록된 표기의 해석 차이에서 생기며, 항상 +1점이다. "
-      "검증 실패 비율은 0.1% 수준이다.\n")
+    A("사유는 하나만 붙인다(예: 2020년 7이닝 더블헤더는 '2020 단축 시즌'으로 집계). 0절 검증 사유(라인스코어·3아웃·잔루·"
+      "타순 연속성·투구 시퀀스)는 `src/wp/validate.py`가 기존 사유가 없는 경기에만 붙인다. 이전 버전의 '파싱 점수 ≠ 게임로그' "
+      "216경기는 `rX#(fielders)(E…)` 표기 해석을 고친 뒤 모두 일치하게 되어 사라졌다(상세는 `reports/b2_report.md` 0절).\n")
 
     A("## 3. 설계\n")
     A("**상태 키** (`src/wp/states.py`): 이닝(1–9, 10+), 초/말, 아웃(0–2), 주자(3비트), 점수차(홈−원정, ±10 절단), "

@@ -34,7 +34,7 @@ def test_strikeout_with_steal_and_error_negating_out():
     assert st.outs == 1 and st.base_bits() == 0b010
     st = run(["CS2(2E4).1-3"], bases=(None, "a", None, None))
     assert st.outs == 0 and st.base_bits() == 0b100
-    # out recorded after the error: runner is out
+    # a clean putout group alongside an error group: runner is out
     st = run(["S8.BXH(E8)(82)"])
     assert st.outs == 1 and st.score[0] == 0
 
@@ -67,3 +67,10 @@ def test_pa_start_states_and_radj():
     assert g.states[:4] == [(1, 0, 0, 0, 0, 0), (1, 0, 0, 1, 0, 0), (1, 0, 1, 2, 0, 0), (1, 0, 2, 2, 0, 0)]
     assert g.states[-1] == (2, 0, 0, 2, 0, 1)   # tie-breaker runner placed on 2B
     assert g.final == (0, 1)
+
+
+def test_error_group_with_clean_putout_is_out():
+    st = run(["S1.BX3(35)(E1/TH1)"])
+    assert st.outs == 1 and st.base_bits() == 0
+    st = run(["OA.1X3(E5)"], bases=(None, "a", None, None))
+    assert st.outs == 0 and st.base_bits() == 0b100

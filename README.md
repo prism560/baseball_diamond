@@ -29,6 +29,10 @@ PYTHONPATH=src python -m wp.games
 ```
 
 ```bash
+PYTHONPATH=src python -m wp.validate
+```
+
+```bash
 PYTHONPATH=src python -m wp.run_pipeline
 ```
 
@@ -44,6 +48,7 @@ python -m pytest -q tests
 |---|---|---|---|
 | 다운로드 | 원본 약 1.1 GB | `data/raw/` | 약 1분 |
 | 파싱 | 이벤트 파싱, 제외 판정 | `data/processed/*.parquet` | 약 1분 |
+| 검증 (0절) | 라인스코어·3아웃·잔루·타순·투구 시퀀스 검증, 위반 경기 제외, `events.parquet` | `data/processed/validation*.parquet` | 약 2분 |
 | 파이프라인 | 워크포워드 평가, 최종 테이블 | `models/`, `reports/results.json`, 그림 | 약 1분 |
 | 리포트 | 리포트 생성 | `reports/b0_b1_report.md` | — |
 
@@ -54,6 +59,7 @@ src/wp/
   download.py     Retrosheet 미러 다운로드
   retro_parse.py  이벤트 파일 파서 (타석 시작 상태, 최종 점수)
   games.py        게임로그 결합, 제외 규칙, parquet 생성
+  validate.py     0절 파서 검증 (게임로그 라인스코어·잔루·박스 기록, 3아웃, 타순, 투구 시퀀스)
   states.py       상태 인코딩/디코딩·진행도·가능성 판정 (재사용 모듈)
   b0_table.py     B0 테이블 적합, 평활, 조회(WPTable, lookup_wp), 단조성 점검
   elo.py          누수 없는 Elo
