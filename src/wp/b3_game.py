@@ -221,7 +221,7 @@ def game_inputs(ctx: SeasonContext, g: pd.Series, lineups: dict, starters: dict,
 
 
 def evaluate_game(ctx: SeasonContext, eng: D3.Engine, g: pd.Series, rows: pd.DataFrame,
-                  ab: Ablation = Ablation(), want_pitch: bool = True) -> dict:
+                  ab: Ablation = Ablation(), want_pitch: bool = True, pregame_only: bool = False) -> dict:
     """rows: annotated PA rows of this game in order.  Returns per-PA B3 WP and
     (optionally) matchup q / after-outcome values for pitch-level evaluation."""
     t0 = time.time()
@@ -236,6 +236,9 @@ def evaluate_game(ctx: SeasonContext, eng: D3.Engine, g: pd.Series, rows: pd.Dat
     gi, L = game_inputs(ctx, g, lineups, starters, ab)
     res = eng.solve(gi)
     pregame_s = res.seconds
+    if pregame_only:
+        wp0 = res.wp(1, 0, 0, 0, 0, D3.composite(0, 0), D3.composite(0, 0))
+        return {"wp": np.array([wp0]), "pregame_s": pregame_s, "pregame_wp": wp0, "seconds": time.time() - t0}
     n_resolve = 0
     t_resolve = 0.0
     cur = {"home": list(lineups["home"]), "vis": list(lineups["vis"])}

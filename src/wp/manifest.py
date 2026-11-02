@@ -92,13 +92,13 @@ def check_fresh(path, _seen=None) -> dict:
     meta = json.loads(mp.read_text())
     if sha256(path) != meta["sha256"]:
         raise StaleArtefact(f"{_rel(path)} was modified after its stage '{meta['stage']}' recorded it")
-    for kind in ("inputs", "code"):
+    for kind, label in (("inputs", "input"), ("code", "code file")):
         for p, h in meta.get(kind, {}).items():
             ap = _abs(p)
             if not ap.exists():
-                raise StaleArtefact(f"{_rel(path)}: recorded {kind[:-1]} {p} is missing")
+                raise StaleArtefact(f"{_rel(path)}: recorded {label} {p} is missing")
             if sha256(ap) != h:
-                raise StaleArtefact(f"{_rel(path)} is stale: {kind[:-1]} {p} changed after it was built "
+                raise StaleArtefact(f"{_rel(path)} is stale: {label} {p} changed after it was built "
                                     f"(stage '{meta['stage']}' must be re-run)")
             if kind == "inputs" and meta_path(ap).exists():
                 check_fresh(ap, _seen)

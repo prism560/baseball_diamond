@@ -209,14 +209,13 @@ def estimate(pa: pd.DataFrame, seasons, k: float = 5.0) -> Transitions:
     Ac = np.zeros((NO, NOUT, NB, 4, NB, RMAX + 1))
     np.add.at(Ac, (oc[m], o1[m], b1[m], o2[m], b2[m], r2[m]), 1)
 
-    # direct: PA start -> next PA start in same half, else half end (outs=3)
-    nxt = d["n_next"].to_numpy()
-    full_o0 = pa["outs0"].to_numpy()   # n_next is a positional index into ``pa``
-    full_b0 = pa["bases0"].to_numpy()
-    has = nxt >= 0
-    # last PA of a half: 3 outs, or a walk-off with fewer outs
-    on = np.where(has, full_o0[np.where(has, nxt, 0)], o2)
-    bn = np.where(has, full_b0[np.where(has, nxt, 0)], np.where(o2 >= 3, 0, b2))
+    # direct: PA start -> next PA start in the same half (computed on ``d`` itself, so any
+    # row filtering by the caller is safe), else the half's end (3 outs or a walk-off)
+    g_, h_, i_ = d["game_id"].to_numpy(), d["half"].to_numpy(), d["inning"].to_numpy()
+    same = np.r_[(g_[1:] == g_[:-1]) & (h_[1:] == h_[:-1]) & (i_[1:] == i_[:-1]), False]
+    nxt = np.where(same, np.arange(1, len(d) + 1), 0)
+    on = np.where(same, o0[np.minimum(nxt, len(d) - 1)], o2)
+    bn = np.where(same, b0[np.minimum(nxt, len(d) - 1)], np.where(o2 >= 3, 0, b2))
     rD = np.minimum(rN + r2, RMAX)
     Dc = np.zeros((2, NOUT, NB, 4, NB, RMAX + 1))
     np.add.at(Dc, (side, o0, b0, on, bn, rD), 1)
