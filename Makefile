@@ -42,3 +42,6 @@ b2: reports/b2_report.md
 
 test:
 	python3 -m pytest -q tests
+
+reports/b3_check.json: $(P)/pa.parquet $(P)/games.parquet $(W)/run_b3_check.py $(W)/ratings.py $(W)/matchup.py
+	$(PY) -m wp.run_b3_check
