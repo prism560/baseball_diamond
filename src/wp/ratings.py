@@ -233,3 +233,73 @@ def deviations(F: dict, p: RatingParams) -> np.ndarray:
     if p.park:
         dev += F["park"]
     return dev - dev[:, [REF]]
+
+
+class RatingStore:
+    """As-of lookups for arbitrary (player, date) pairs, consistent with
+    ``build_features``/``deviations`` (same season weights and shrinkage).
+
+    ``batter_rates(ids, dates, L)`` -> r_b [n, NR] and per-hand rates {"L","R"}.
+    ``pitcher_rates(ids, dates, L)`` -> r_p [n, NR].
+    ``league(dates)`` -> league rates L [n, NR] (season-to-date blend).
+    """
+
+    def __init__(self, d: pd.DataFrame, params: RatingParams):
+        self.p = params
+        oh = _onehot(d["r"].to_numpy())
+        self.cols = [f"c{i}" for i in range(NR)]
+        base = pd.DataFrame(oh, columns=self.cols)
+        base["n"] = (d["r"].to_numpy() >= 0).astype(np.float32)
+        for c in ("batter", "pitcher", "phand", "season", "date"):
+            base[c] = d[c].astype(str).to_numpy() if c in ("batter", "pitcher", "phand") else d[c].to_numpy()
+        self.tables = {}
+        for role, keys in (("bat", ["batter"]), ("pit", ["pitcher"]), ("bath", ["batter", "phand"])):
+            daily = base.groupby(keys + ["season", "date"])[self.cols + ["n"]].sum()
+            cum = daily.groupby(level=list(range(len(keys) + 1))).cumsum().reset_index()
+            tot = base.groupby(keys + ["season"])[self.cols + ["n"]].sum()
+            self.tables[role] = (keys, cum.sort_values("date"), tot)
+        # league daily cumulative
+        lg = base.groupby(["season", "date"])[self.cols].sum()
+        self.lg_cum = lg.groupby(level=0).cumsum().reset_index().sort_values("date")
+        seas = base.groupby("season")[self.cols].sum()
+        self.lg_season = seas
+        self.lg_all = (seas.sum() / seas.sum().sum()).to_numpy()
+
+    def _asof(self, role, key_vals: dict, seasons, dates) -> tuple[np.ndarray, np.ndarray]:
+        keys, cum, tot = self.tables[role]
+        q = pd.DataFrame({**key_vals, "season": seasons, "date": pd.to_datetime(dates)})
+        q["_i"] = np.arange(len(q))
+        q = q.sort_values("date")
+        m = pd.merge_asof(q, cum, on="date", by=keys + ["season"], direction="backward",
+                          allow_exact_matches=False).sort_values("_i")
+        cur = np.nan_to_num(m[self.cols + ["n"]].to_numpy(np.float64)) * SEASON_W[0]
+        for lag in (1, 2, 3):
+            idx = pd.MultiIndex.from_frame(pd.DataFrame({**{k: key_vals[k] for k in keys},
+                                                         "season": np.asarray(seasons) - lag}))
+            cur += SEASON_W[lag] * np.nan_to_num(tot.reindex(idx).to_numpy())
+        return cur[:, :NR], cur[:, NR]
+
+    def league(self, seasons, dates, m: float = 20000.0) -> np.ndarray:
+        q = pd.DataFrame({"season": seasons, "date": pd.to_datetime(dates)})
+        q["_i"] = np.arange(len(q))
+        mm = pd.merge_asof(q.sort_values("date"), self.lg_cum, on="date", by="season",
+                           direction="backward", allow_exact_matches=False).sort_values("_i")
+        cur = np.nan_to_num(mm[self.cols].to_numpy(np.float64))
+        prev = self.lg_season.reindex(np.asarray(seasons) - 1).to_numpy()
+        prev = prev / prev.sum(1, keepdims=True)
+        prev = np.where(np.isnan(prev), self.lg_all[None], prev)
+        return (cur + m * prev) / (cur.sum(1, keepdims=True) + m)
+
+    def batter_rates(self, ids, seasons, dates, L):
+        C, N = self._asof("bat", {"batter": np.asarray(ids, str)}, seasons, dates)
+        rb = shrink(C, N, L, self.p.kappa_bat)
+        per_hand = {}
+        for h in ("L", "R"):
+            Ch, Nh = self._asof("bath", {"batter": np.asarray(ids, str), "phand": np.full(len(ids), h)},
+                                seasons, dates)
+            per_hand[h] = (Ch, Nh)
+        return rb, per_hand
+
+    def pitcher_rates(self, ids, seasons, dates, L):
+        C, N = self._asof("pit", {"pitcher": np.asarray(ids, str)}, seasons, dates)
+        return shrink(C, N, L, self.p.kappa_pit)
