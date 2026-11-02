@@ -40,3 +40,8 @@ def test_progress():
     assert S.progress(1, 0, 0) == 0.0
     assert abs(S.progress(9, 1, 2) - 53 / 54) < 1e-12
     assert S.progress(11, 0, 0) <= 1.0
+
+
+def test_small_integer_dtypes_do_not_overflow():
+    args = [np.array([v], dtype=np.int8) for v in (10, 1, 2, 7, 10, 1)]
+    assert S.encode(*args)[0] == S.encode(10, 1, 2, 7, 10, 1)

@@ -57,7 +57,13 @@ def canonical_xrule(inning, xrule):
 
 
 def encode(inning, half, outs, bases, diff, xrule=0):
-    """Vectorised state -> integer key. Inputs may be scalars or arrays."""
+    """Vectorised state -> integer key. Inputs may be scalars or arrays.
+
+    All inputs are cast to int64 first: small dtypes (int8 from parquet) would
+    otherwise overflow inside the mixed-radix arithmetic."""
+    scalar = np.ndim(inning) == 0
+    inning, half, outs, bases, diff, xrule = (np.asarray(v, dtype=np.int64)
+                                              for v in (inning, half, outs, bases, diff, xrule))
     inn = inning_bucket(inning)
     x = canonical_xrule(inning, xrule)
     d = clip_diff(diff) + DIFF_CAP
@@ -65,7 +71,7 @@ def encode(inning, half, outs, bases, diff, xrule=0):
     for v, r in ((inn - 1, N_INN), (np.asarray(half), N_HALF), (np.asarray(outs), N_OUTS),
                  (np.asarray(bases), N_BASES), (d, N_DIFF)):
         key = key * r + v
-    return key.astype(np.int32) if isinstance(key, np.ndarray) else int(key)
+    return int(key) if scalar else np.asarray(key).astype(np.int32)
 
 
 def decode(key):

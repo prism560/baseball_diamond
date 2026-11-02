@@ -34,7 +34,6 @@ import concurrent.futures as cf
 import json
 import re
 import time
-from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -85,7 +84,7 @@ def season_validate(year: int, raw: Path, events_from: int):
                     if (raw / str(year) / n).exists()), None)
     gl = read_gl(gl_path).set_index("game_id") if gl_path else pd.DataFrame()
     rows, ev_parts, pv_rows = [], [], []
-    patterns = Counter()
+    pstat = {"season": year, "batting_pa": 0, "with_pitches": 0}
     for f in sorted((raw / str(year)).glob("*.EV?")):
         for g in parse_file(f):
             r = {"game_id": g.game_id, "season": year, "parse_error": g.error is not None}
@@ -159,8 +158,14 @@ def season_validate(year: int, raw: Path, events_from: int):
                 ev_parts.append(e)
             for pa, tag in g.pitch_viol:
                 pv_rows.append((g.game_id, year, pa, tag))
+            for e in g.events:
+                if e[8]:                                  # batting event
+                    pstat["batting_pa"] += 1
+                    ps = e[13]
+                    if ps.strip() and "?" not in ps and "U" not in ps:
+                        pstat["with_pitches"] += 1
     ev = pd.concat(ev_parts, ignore_index=True) if ev_parts else None
-    return pd.DataFrame(rows), ev, pv_rows
+    return pd.DataFrame(rows), ev, (pv_rows, pstat)
 
 
 def chadwick_crosscheck(ext: Path, events: pd.DataFrame | None) -> dict:
@@ -256,13 +261,15 @@ def main() -> None:
     a = ap.parse_args()
     t0 = time.time()
     years = [y for y in range(a.first, a.last + 1) if any((a.raw / str(y)).glob("*.EV?"))]
-    vparts, eparts, pv = [], [], []
+    vparts, eparts, pv, pstats = [], [], [], []
     with cf.ProcessPoolExecutor(a.workers) as ex:
-        for v, e, p in ex.map(season_validate, years, [a.raw] * len(years), [a.events_from] * len(years)):
+        for v, e, (p, ps) in ex.map(season_validate, years, [a.raw] * len(years),
+                                    [a.events_from] * len(years)):
             vparts.append(v)
             if e is not None:
                 eparts.append(e)
             pv += p
+            pstats.append(ps)
     val = pd.concat(vparts, ignore_index=True).fillna({c: 0 for c in ("d_repair_push", "d_stale_implied",
                                                                        "d_implicit_force",
                                                                        "d_batting_order_break",
@@ -290,6 +297,13 @@ def main() -> None:
     cc = chadwick_crosscheck(a.external, events)
     summ = {"seconds": round(time.time() - t0, 1), "games": int(len(val)), "chadwick": cc}
     summ.update(apply_exclusions(a.processed, val))
+    ps = pd.DataFrame(pstats)
+    ps["complete_frac"] = ps["with_pitches"] / ps["batting_pa"].clip(lower=1)
+    pvd = pd.DataFrame(pv, columns=["game_id", "season", "pa", "tag"])
+    pvd = pvd[pvd["tag"] != "no_or_unknown_pitches"].groupby("season").size()
+    ps["pitch_rule_violations"] = ps["season"].map(pvd).fillna(0).astype(int)
+    ps["violation_rate"] = ps["pitch_rule_violations"] / ps["with_pitches"].clip(lower=1)
+    summ["pitch_sequences_by_season"] = ps.to_dict(orient="records")
     (a.processed / "validation_summary.json").write_text(json.dumps(summ, indent=1, ensure_ascii=False))
     print(json.dumps(summ, indent=1, ensure_ascii=False))
 
