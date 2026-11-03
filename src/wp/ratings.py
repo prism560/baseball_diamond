@@ -90,10 +90,17 @@ def _onehot(r: np.ndarray) -> np.ndarray:
     return m
 
 
-def asof_counts(d: pd.DataFrame, keys: list[str]) -> tuple[np.ndarray, np.ndarray]:
+def asof_counts(d: pd.DataFrame, keys: list[str], weights: np.ndarray | None = None
+                ) -> tuple[np.ndarray, np.ndarray]:
     """Season-weighted counts for the entity ``keys`` (e.g. ["batter"]) using only
-    PAs on dates strictly before each row's date.  Returns (C [n, NR], N [n])."""
+    PAs on dates strictly before each row's date.  Returns (C [n, NR], N [n]).
+
+    ``weights`` [n, NR] multiplies each PA's one-hot outcome (park-neutral counts:
+    1 / park factor of the PA's park); C is then rescaled so that sum_o C_o = N
+    (ratio estimator - the PA count is unchanged)."""
     oh = _onehot(d["r"].to_numpy())
+    if weights is not None:
+        oh = (oh * weights).astype(np.float32)
     cols = [f"c{i}" for i in range(NR)]
     base = d[keys + ["season", "date"]].copy()
     base[cols] = oh
@@ -108,7 +115,11 @@ def asof_counts(d: pd.DataFrame, keys: list[str]) -> tuple[np.ndarray, np.ndarra
         idx["season"] = idx["season"] - lag
         prev = tot.reindex(pd.MultiIndex.from_frame(idx)).to_numpy()
         out += SEASON_W[lag] * np.nan_to_num(prev)
-    return out[:, :NR], out[:, NR]
+    C, N = out[:, :NR], out[:, NR]
+    if weights is not None:
+        tot_c = C.sum(1)
+        C = np.where(tot_c[:, None] > 0, C * (N / np.where(tot_c > 0, tot_c, 1))[:, None], C)
+    return C, N
 
 
 def league_asof(d: pd.DataFrame, m: float = 20000.0) -> np.ndarray:
@@ -205,13 +216,17 @@ class RatingParams:
     platoon: bool = True
 
 
-def build_features(d: pd.DataFrame) -> dict:
-    """All as-of count arrays needed for ratings (computed once, reused for tuning)."""
+def build_features(d: pd.DataFrame, park_neutral: bool = False) -> dict:
+    """All as-of count arrays needed for ratings (computed once, reused for tuning).
+
+    park_neutral: player counts are deflated by the park factor of the park each
+    PA was played in (B4 1.1), so that the park is applied only once, in the matchup."""
     L = league_asof(d)
-    Cb, Nb = asof_counts(d, ["batter"])
-    Cp, Np = asof_counts(d, ["pitcher"])
-    Cbh, Nbh = asof_counts(d, ["batter", "phand"])          # batter vs this pitcher hand
     pf = park_factors(d)
+    w = np.exp(-pf) if park_neutral else None
+    Cb, Nb = asof_counts(d, ["batter"], w)
+    Cp, Np = asof_counts(d, ["pitcher"], w)
+    Cbh, Nbh = asof_counts(d, ["batter", "phand"], w)       # batter vs this pitcher hand
     lp = league_platoon(d)
     return {"L": L, "Cb": Cb, "Nb": Nb, "Cp": Cp, "Np": Np, "Cbh": Cbh, "Nbh": Nbh, "park": pf, "LP": lp}
 
