@@ -1,0 +1,15 @@
+{
+ "stage": "run_b4_combine",
+ "created": "2026-11-03T17:27:35+0000",
+ "sha256": "5b651a661791b6fa814208030c864f4189625f27dca6a1cfc00fe0c6626d8209",
+ "inputs": {
+  "data/processed/b3_eval_pa.parquet": "7aa709bf23c9e056d28289b44dd38b679d4fdba2260d0e6997b070be12693387",
+  "data/processed/b3_eval_pitch.parquet": "d2c6d8dffd1d33b27acc1ea8a82f176d4c1e79b1ecb108b6afe5e78c1e9598bb"
+ },
+ "code": {
+  "src/wp/run_b4_combine.py": "559226b9a58226e32fe0931c46a067164778786cf9de644acd0c435d8c7d9852",
+  "src/wp/b1_model.py": "80aaa87f9c78cb4a25d61fd37b17ca80871db41508648a0c20a2fe4c61a3d877",
+  "src/wp/evaluate.py": "a90d9a1ac4eaa1f9cbe3e0b3d01a2802202dc938f4aa1255efe15c29b6424191",
+  "src/wp/run_b3_eval.py": "2343caa56aedb90db622c6c9ee4ec87a2763940617e1386f3781e51205958bbc"
+ }
+}

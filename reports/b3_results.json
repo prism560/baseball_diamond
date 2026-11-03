@@ -32,7 +32,7 @@
    "n_states": 183573,
    "ipf_max_abs_err_per_matchup": 7.746858710078186e-13,
    "n_pitches": 702785,
-   "pitch_build_s": 123.2
+   "pitch_build_s": 124.1
   },
   "2024": {
    "games": 2418,
@@ -59,7 +59,7 @@
    "n_states": 182151,
    "ipf_max_abs_err_per_matchup": 8.228140391253191e-13,
    "n_pitches": 694261,
-   "pitch_build_s": 121.3
+   "pitch_build_s": 128.9
   },
   "2025": {
    "games": 2418,
@@ -89,6 +89,9 @@
    "pitch_build_s": 128.1
   }
  },
+ "extra_seasons_dumped_only": [
+  2022
+ ],
  "pa_vs_B1": [
   {
    "stratum": "all",
@@ -5675,5 +5678,5 @@
   ]
  },
  "n_games_total": 7253,
- "seconds": 510.5
+ "seconds": 590.7
 }
