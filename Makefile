@@ -58,3 +58,7 @@ reports/b3_report.md: reports/b3_results.json $(W)/report_b3.py
 	$(PY) -m wp.report_b3
 
 b3: reports/b3_report.md
+
+# Cross-check against Retrosheet's official parsed play-by-play (zips at the repo root)
+$(P)/crosscheck_retrosheet.json: $(P)/games.parquet 2023plays.zip 2024plays.zip 2025plays.zip $(W)/crosscheck.py $(W)/retro_parse.py
+	$(PY) -m wp.crosscheck

@@ -389,6 +389,7 @@ class ParsedGame:
     counts: dict = field(default_factory=dict)        # team event counts {(team, cat): n}
     pitch_viol: list = field(default_factory=list)    # (pa, tag)
     events: list = field(default_factory=list)        # rows per EVENT_COLS
+    occ: list = field(default_factory=list)           # per event: (runner ids on 1B,2B,3B before, after)
 
 
 def parse_game(lines: list[str], game_id: str) -> ParsedGame:
@@ -490,6 +491,7 @@ def parse_game(lines: list[str], game_id: str) -> ParsedGame:
             first = split_top(ev.replace("#", "").replace("!", "").replace("?", "").partition(".")[0], "/")[0]
             cat = event_category(first)
             before = (st.inning, st.half, st.outs, st.base_bits(), st.score[0], st.score[1])
+            occ_before = tuple(st.bases[1:4])
             runs_before = st.score[team]
             try:
                 batting = apply_play(st, ev, batter, diag)
@@ -501,6 +503,7 @@ def parse_game(lines: list[str], game_id: str) -> ParsedGame:
             g.events.append((pa_idx, *before, cat, batting, st.outs, st.base_bits(), runs,
                              cnt, pitches, batter, pitcher[1 - team], pa_batter_slot or 0,
                              starter[1 - team]))
+            g.occ.append((occ_before, tuple(st.bases[1:4]) if st.outs < 3 else (None, None, None)))
             # team event counts (for game-log box-score comparison)
             for t in split_top(first, "+"):
                 c2 = event_category(t) if t else ""
