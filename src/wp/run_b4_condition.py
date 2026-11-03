@@ -76,11 +76,16 @@ def main() -> None:
     # condition features (in game order: pa_frame keeps game order within a game)
     CF = CD.condition_features(d)
     # times through the order of the starter: per-category coefficient on the lap (0/1/2)
-    o, r = d["o"].to_numpy(), d["r"].to_numpy()
-    inc, seas = d["included"].to_numpy(), d["season"].to_numpy()
     starter_in = (d["pitcher"].astype(str) == d["starter"].astype(str)).to_numpy()
     bf = d.groupby(["game_id", "half"], sort=False).cumcount().to_numpy()   # PAs of this side so far
     lapf = np.where(starter_in, np.minimum(bf // 9, 2), 0).astype(float)    # 0/1/2 = lap 1/2/3+
+    # keep only the rows of the training / evaluation seasons (memory: X is n x features x 10)
+    keep = d["season"].to_numpy() >= min(years)
+    d = d[keep].reset_index(drop=True)
+    qs, Xq, lapf = qs[keep], Xq[keep].astype(np.float32), lapf[keep]
+    CF = CF[keep].reset_index(drop=True)
+    o, r = d["o"].to_numpy(), d["r"].to_numpy()
+    inc, seas = d["included"].to_numpy(), d["season"].to_numpy()
     rng = np.random.default_rng(0)
     pred = {k: np.full((len(d), 11), np.nan) for k in ("Q", "QC", "QT", "QTC")}
     coefs = {}
@@ -100,20 +105,23 @@ def main() -> None:
         best = None
         for k in KS:
             cdv = CD.cond_dev(CF, k)
-            Xc = extend(Xq, [cdv, CF["n_prev"].to_numpy() / 100])
+            pc_ = CF["n_prev"].to_numpy() / 100
+            Xf = extend(Xq[fit_idx], [cdv[fit_idx], pc_[fit_idx]]).astype(np.float64)
+            Xv_ = extend(Xq[val_idx], [cdv[val_idx], pc_[val_idx]]).astype(np.float64)
             for lam in LAMS[:2]:
-                mdl = fit_ext(qs[fit_idx], Xc[fit_idx], r[fit_idx], lam)
-                v = float(M2.multiclass_logloss(mdl.predict(qs[val_idx], Xc[val_idx]), o[val_idx]).mean())
+                mdl = fit_ext(qs[fit_idx], Xf, r[fit_idx], lam)
+                v = float(M2.multiclass_logloss(mdl.predict(qs[val_idx], Xv_), o[val_idx]).mean())
                 if best is None or v < best[0]:
                     best = (v, k, lam)
         _, k, lam = best
         cdv = CD.cond_dev(CF, k)
         pcf = CF["n_prev"].to_numpy() / 100
-        variants = {"Q": Xq, "QC": extend(Xq, [cdv, pcf]), "QT": extend(Xq, [lapf]),
-                    "QTC": extend(Xq, [lapf, cdv, pcf])}
-        for name, Xv in variants.items():
-            mdl = fit_ext(qs[all_idx], Xv[all_idx], r[all_idx], lam)
-            pred[name][mS] = mdl.predict(qs[mS], Xv[mS])
+        variants = {"Q": lambda: Xq, "QC": lambda: extend(Xq, [cdv, pcf]), "QT": lambda: extend(Xq, [lapf]),
+                    "QTC": lambda: extend(Xq, [lapf, cdv, pcf])}
+        for name, mk in variants.items():
+            Xv = mk()
+            mdl = fit_ext(qs[all_idx], Xv[all_idx].astype(np.float64), r[all_idx], lam)
+            pred[name][mS] = mdl.predict(qs[mS], Xv[mS].astype(np.float64))
             if name in ("QC", "QTC"):
                 ex = Xv.shape[1] - M2.NF
                 coefs[f"{name}_{S}"] = {c: mdl.beta[RT.R_IDX[c], M2.NF:].round(4).tolist()

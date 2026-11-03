@@ -79,10 +79,21 @@ def _kernel(N, q, A):
 
 
 class KernelBuilder:
-    def __init__(self, gi: GameInputs, override: dict | None = None):
+    def __init__(self, gi: GameInputs, override: dict | None = None, cache: dict | None = None):
+        """``cache`` (optional, shared across solves of one game) holds the per-slot PA
+        kernels; after a pinch hitter only that team's slot must be dropped
+        (``invalidate``) - every other kernel is reused."""
         self.gi = gi
         self.override = override or {}      # (inning, half) -> (pit_dev [NR], hand)
-        self._cache = {}
+        self._cache = {} if cache is None else cache
+
+    @staticmethod
+    def invalidate(cache: dict, half: int, slot: int) -> int:
+        """Drop cached kernels of the team batting in ``half`` for lineup ``slot``."""
+        keys = [k for k in cache if k[1] == half and k[2] == slot]
+        for k in keys:
+            del cache[k]
+        return len(keys)
 
     def team(self, half):
         """(batting team, fielding team) for a half."""
@@ -274,7 +285,7 @@ class Engine:
 
     def solve(self, gi: GameInputs, override: dict | None = None, upto: tuple | None = None,
               cache: B3Result | None = None, start: tuple | None = None,
-              track_memory: bool = False) -> B3Result:
+              track_memory: bool = False, kernel_cache: dict | None = None) -> B3Result:
         """Backward induction.
 
         cache + upto=(inning, half): halves strictly after ``upto`` are reused from
@@ -284,7 +295,7 @@ class Engine:
         if track_memory:
             tracemalloc.start()
         t0 = time.time()
-        kb = KernelBuilder(gi, override)
+        kb = KernelBuilder(gi, override, kernel_cache)
         d = self.d
         V, Es = {}, {}
         tm = {"kernel_s": 0.0, "solve_s": 0.0}
