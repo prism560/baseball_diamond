@@ -32,7 +32,7 @@
    "n_states": 183573,
    "ipf_max_abs_err_per_matchup": 7.746858710078186e-13,
    "n_pitches": 702785,
-   "pitch_build_s": 124.1
+   "pitch_build_s": 127.8
   },
   "2024": {
    "games": 2418,
@@ -59,7 +59,7 @@
    "n_states": 182151,
    "ipf_max_abs_err_per_matchup": 8.228140391253191e-13,
    "n_pitches": 694261,
-   "pitch_build_s": 128.9
+   "pitch_build_s": 129.1
   },
   "2025": {
    "games": 2418,
@@ -86,7 +86,7 @@
    "n_states": 182553,
    "ipf_max_abs_err_per_matchup": 8.677225604714067e-13,
    "n_pitches": 694902,
-   "pitch_build_s": 128.1
+   "pitch_build_s": 128.2
   }
  },
  "extra_seasons_dumped_only": [
@@ -5678,5 +5678,5 @@
   ]
  },
  "n_games_total": 7253,
- "seconds": 590.7
+ "seconds": 577.7
 }
