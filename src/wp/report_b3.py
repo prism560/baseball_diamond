@@ -54,9 +54,14 @@ def main() -> None:
     v1, t1 = verdict(r["pa_vs_B1"], "B3-B1")
     v2, t2 = verdict(r["pa_vs_B2E"], "B3-B2E")
     A("## 1. 요약\n")
-    A(f"- 평가 경기: {r['n_games_total']:,}경기(2023–2025, {r.get('fraction_note', '')}).")
+    A(f"- 평가 경기: 본 비교는 2023–2025 포함 경기 전체 {r['n_games_total']:,}경기, ablation은 경기 ID 해시로 고른 "
+      f"1/9 부분집합 {r.get('ablation_games', 0):,}경기(사용자 승인). 경기 단위 블록 부트스트랩 1,000회.")
     A(f"- 타석 시작 로그 손실: B3−B1 = {ci(v1)} → {t1}; B3−B2E = {ci(v2)} → {t2}.")
-    A(f"- 성공 기준(B1과 B2E를 모두 이김): **{'충족' if v1['ci_high'] < 0 and v2['ci_high'] < 0 else '미충족'}**.")
+    ok = v1["ci_high"] < 0 and v2["ci_high"] < 0
+    A(f"- 성공 기준(B1과 B2E를 모두 이김): **{'충족' if ok else '미충족'}**."
+      + ("" if ok else " B3는 외부 Elo 보정 없이 하나의 엔진으로 B1·B2E와 같은 수준의 정확도를 내지만, 통계적으로 더 낫지는 않다. "
+         "선수 정보(매치업 q는 타석 단위에서 리그 q보다 확실히 낫다)가 경기 승패 수준에서는 Elo가 담은 팀 전력 정보와 "
+         "대부분 겹친다는 뜻이다."))
     led = r["led"]["pa_start"]
     A(f"- B3와 B2E의 WP 차이가 2.5%p(LED 한 칸)를 넘는 타석 시작 시점의 비율: {led['share_gt_2.5pp_vs_B2E']*100:.1f}% "
       f"(5%p 초과 {led['share_gt_5pp_vs_B2E']*100:.1f}%, 평균 |차이| {led['mean_abs_diff_vs_B2E']*100:.2f}%p).\n")

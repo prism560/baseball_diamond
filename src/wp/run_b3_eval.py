@@ -83,7 +83,8 @@ def main() -> None:
     counts = B0.season_counts(st)
     st_seasons = sorted(st["season"].unique())
     runs_root = P / "b3_runs"
-    abls = sorted(p.name for p in runs_root.iterdir()) if runs_root.exists() else []
+    # "pregame" holds the pre-game diagnostic run (one value per game), not an ablation
+    abls = sorted(p.name for p in runs_root.iterdir() if p.name != "pregame") if runs_root.exists() else []
     out = {"ablations_found": abls, "per_season": {}}
     pa_all, pitch_all = [], []
     b2_cache = {}
@@ -132,8 +133,10 @@ def main() -> None:
         for ab in abls:
             if ab == "full":
                 continue
-            if all(g in b3[ab] for g in ev["game_id"].unique()):
-                ev[f"B3_{ab}"] = np.concatenate([b3[ab][g]["wp"] for g in ev["game_id"].unique()])
+            # ablations run on a game subset: NaN for games without that run
+            n_by = ev.groupby("game_id", sort=False).size()
+            ev[f"B3_{ab}"] = np.concatenate([b3[ab][g]["wp"] if g in b3[ab] else np.full(n, np.nan)
+                                             for g, n in n_by.items()])
         mt = np.array(meta_t)
         rec["timing"] = {"pregame_s_mean": float(mt[:, 0].mean()), "pregame_s_max": float(mt[:, 0].max()),
                          "resolves_per_game": float(mt[:, 1].mean()), "resolve_s_mean": float(mt[:, 2].mean()),
