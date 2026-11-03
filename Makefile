@@ -66,3 +66,19 @@ $(P)/crosscheck_retrosheet.json: $(P)/games.parquet 2023plays.zip 2024plays.zip 
 # B4 step 3: Statcast (collected on a local PC with scripts/fetch_statcast.py)
 b4-statcast:
 	$(PY) -m wp.run_b4_statcast
+
+# B4: PA-level gates, combination, report
+reports/b4_q.json: reports/b3_check.json $(P)/pa.parquet $(W)/run_b4_q.py $(W)/matchup_v2.py $(W)/ratings.py
+	$(PY) -m wp.run_b4_q
+
+reports/b4_condition.json: reports/b3_check.json $(P)/pa.parquet $(W)/run_b4_condition.py $(W)/condition.py
+	$(PY) -m wp.run_b4_condition
+
+reports/b4_combine.json: reports/b3_results.json $(W)/run_b4_combine.py
+	$(PY) -m wp.run_b4_combine
+
+reports/b4_report.md: reports/b4_q.json reports/b4_condition.json reports/b4_combine.json $(P)/crosscheck_retrosheet.json $(W)/report_b4.py
+	$(PY) -m wp.run_b4_statcast
+	$(PY) -m wp.report_b4
+
+b4: reports/b4_report.md
