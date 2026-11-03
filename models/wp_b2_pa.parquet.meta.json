@@ -1,6 +1,6 @@
 {
  "stage": "run_b2",
- "created": "2026-11-02T15:37:01+0000",
+ "created": "2026-11-03T12:38:42+0000",
  "sha256": "cb9ec8f0f93b20e609a899e071da912ac172b51d7d27a2f212aba0849b995a93",
  "inputs": {
   "data/processed/games.parquet": "64cb6e15aeae6e4a63f2dec63724f7ca091077ae701d166a0b4a20a4cf6f0d85",
@@ -11,7 +11,7 @@
  "code": {
   "src/wp/run_b2.py": "b2e838cec656f28e06d2f9cceca414577815d44e85da99dce7f61198fef678d9",
   "src/wp/dp.py": "c09e5a06928458ff135beeb8e7a5e15d49d4f7d62aaf24979e862e30b9fd03f0",
-  "src/wp/transitions.py": "27464d9b6604483f1aed599b6abd12333fb88ef0cf40540b683f11dc2027a61c",
+  "src/wp/transitions.py": "7d1f11159b5f6402b9f5cfd580947de3f63cf9048669d3b46e3d5b2b21485871",
   "src/wp/count_chain.py": "d6dee3e7b92fe4238f052479db72e6b51d495ca26c8835d5b484c6b26b5df1f3",
   "src/wp/evaluate.py": "a90d9a1ac4eaa1f9cbe3e0b3d01a2802202dc938f4aa1255efe15c29b6424191",
   "src/wp/b0_table.py": "2185f5a0eb72eac2f43397a9b4590d54af4f2acf9d07452cd45cf7396598d63e",

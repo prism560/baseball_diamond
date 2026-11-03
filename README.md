@@ -7,7 +7,9 @@
 
 - **B2** — 리그 평균 **정확 DP 엔진**(타석 단위 역방향 귀납, 연장 고정점, 타순 축)과 **현재 타석 볼카운트 체인**(IPF로 DP와 정합). 투구마다 WP를 조회할 수 있다.
 
-결과와 설계 근거는 [`reports/b0_b1_report.md`](reports/b0_b1_report.md), [`reports/b2_report.md`](reports/b2_report.md)에 있다. B3 확장 지점은 [`docs/B3_INTERFACE.md`](docs/B3_INTERFACE.md).
+- **B3** — 선수 능력치(그날 전날까지만 쓰는 누수 없는 추정), 매치업(다항 Log5), 선발 강판 해저드와 불펜 등급을 DP 안에 넣은 엔진. 경기 전 WP와 경기 중 WP를 한 엔진으로 계산한다. 실시간 호출 순서는 [`docs/REALTIME.md`](docs/REALTIME.md)에 있다.
+
+결과와 설계 근거는 [`reports/b0_b1_report.md`](reports/b0_b1_report.md), [`reports/b2_report.md`](reports/b2_report.md), [`reports/b3_report.md`](reports/b3_report.md)에 있다. B3 확장 지점은 [`docs/B3_INTERFACE.md`](docs/B3_INTERFACE.md).
 
 ## 데이터
 
@@ -90,6 +92,13 @@ src/wp/
   count_chain.py  B2 볼카운트 체인, IPF 정합 보정
   wp_b2.py        B2 조회 API (PitchWP, PAWP)
   run_b2.py       B2 워크포워드 실행
+  manifest.py     산출물 출처 기록과 오래된 입력 검사
+  ratings.py      B3 선수 능력치 (경기 전날까지), 구장·플래툰
+  matchup.py      B3 매치업 결합 (다항 Log5, INT 리그 수준)
+  pitching_policy.py  B3 선발 강판 해저드, 불펜 등급, 타순 바퀴 효과
+  dp_b3.py        B3 DP 엔진 (타순×투수 단계 합성 상태)
+  b3_game.py      B3 경기별 입력 조립과 타석별 평가
+  run_b3_check.py / run_b3_games.py / run_b3_eval.py  B3 중간 점검, 경기별 실행, 평가
   report.py       리포트 생성
 tests/            pytest 정합성 테스트
 models/           wp_table_b0.parquet (+단조 버전, 평가 시즌별 테이블), b1_coef.json, elo_params.json

@@ -45,3 +45,16 @@ test:
 
 reports/b3_check.json: $(P)/pa.parquet $(P)/games.parquet $(W)/run_b3_check.py $(W)/ratings.py $(W)/matchup.py
 	$(PY) -m wp.run_b3_check
+
+# B3: per-game runs are resumable (data/processed/b3_runs/); main comparison on all games,
+# ablations on a 1/9 subset (scripts/run_b3_all.sh), then evaluation and report.
+b3-runs: reports/b3_check.json
+	scripts/run_b3_all.sh
+
+reports/b3_results.json: reports/b3_check.json $(P)/pa.parquet $(W)/run_b3_eval.py $(W)/b3_game.py $(W)/dp_b3.py
+	$(PY) -m wp.run_b3_eval
+
+reports/b3_report.md: reports/b3_results.json $(W)/report_b3.py
+	$(PY) -m wp.report_b3
+
+b3: reports/b3_report.md
