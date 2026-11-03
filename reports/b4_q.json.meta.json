@@ -1,7 +1,7 @@
 {
  "stage": "run_b4_q",
- "created": "2026-11-03T15:52:20+0000",
- "sha256": "81d40e651a16db3b8693d36b0fc3c14fab4d3c43d33d01b1cd778b3b51f5deca",
+ "created": "2026-11-03T17:53:11+0000",
+ "sha256": "c3d0dfd94f279f78e1dde97c155569221520bcbbf91b1a0be8ec9f9d6275bb72",
  "inputs": {
   "data/processed/pa.parquet": "279a6ee4e787929215945c7a6d891f4f337bd9e90dff70eee9a47e2f62e2e421",
   "data/processed/games.parquet": "64cb6e15aeae6e4a63f2dec63724f7ca091077ae701d166a0b4a20a4cf6f0d85",
@@ -10,7 +10,7 @@
  },
  "code": {
   "src/wp/run_b4_q.py": "5d951b4a6467d3427a579c69f8bcc333711ec0d6287e352f6e6fd1848f8dd027",
-  "src/wp/matchup_v2.py": "56c21c6faeda1d07046276e8e1077924ac297ddad3ccf65dc8d643cfab98f521",
+  "src/wp/matchup_v2.py": "42a582dc28fd07c7b10f45899f0baeb88ff1fd6aa9074ef767ae6a38eb13e02f",
   "src/wp/matchup.py": "cf508ae76e77780aa03b9ac48ab880e63b2bf42e61eb29590c390f6193b89e1d",
   "src/wp/ratings.py": "a8699369cce039263b3f49b3ba82c751c2f8c359dd8cfbbd037005794ace63a1",
   "src/wp/transitions.py": "7d1f11159b5f6402b9f5cfd580947de3f63cf9048669d3b46e3d5b2b21485871",
