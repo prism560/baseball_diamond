@@ -62,22 +62,28 @@ class LogitMatchup:
         return out
 
 
-def fit(q_state: np.ndarray, X: np.ndarray, y_r: np.ndarray, lam: float) -> LogitMatchup:
-    """y_r: outcome index in the 10 categories (rows with INT must be removed)."""
+def fit(q_state: np.ndarray, X: np.ndarray, y_r: np.ndarray, lam: float, n_base: int | None = None) -> LogitMatchup:
+    """y_r: outcome index in the 10 categories (rows with INT must be removed).
+    X may carry extra features after the NF base ones: their coefficients are
+    shrunk toward 0 (no effect), the base ones toward the log5 value 1."""
     off = np.log(q_state[:, RC]) - np.log(q_state[:, RC][:, [REF]])
     n = len(y_r)
     Y = np.zeros((n, NR))
     Y[np.arange(n), y_r] = 1.0
-    nb = len(NONREF) * NF
+    nf = X.shape[1]
+    n_base = NF if n_base is None else n_base
+    nb = len(NONREF) * nf
 
     def unpack(th):
-        beta = np.zeros((NR, NF))
-        beta[NONREF] = th[:nb].reshape(len(NONREF), NF)
+        beta = np.zeros((NR, nf))
+        beta[NONREF] = th[:nb].reshape(len(NONREF), nf)
         gamma = np.zeros(NR)
         gamma[NONREF] = th[nb:]
         return beta, gamma
 
-    prior = np.concatenate([np.ones(nb), np.zeros(len(NONREF))])
+    pb = np.zeros((len(NONREF), nf))
+    pb[:, :n_base] = 1.0
+    prior = np.concatenate([pb.ravel(), np.zeros(len(NONREF))])
 
     def f(th):
         beta, gamma = unpack(th)
