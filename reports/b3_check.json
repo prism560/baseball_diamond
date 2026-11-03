@@ -463,10 +463,10 @@
   "18": 1.5231810947297098
  },
  "timings": {
-  "load_s": 20.6,
-  "features_s": 71.0,
-  "state_q_s": 10.8,
-  "tuning_s": 114.5
+  "load_s": 22.1,
+  "features_s": 98.4,
+  "state_q_s": 13.2,
+  "tuning_s": 158.0
  },
  "hands_coverage": 1.0
 }
