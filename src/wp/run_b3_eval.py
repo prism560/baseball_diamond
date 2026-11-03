@@ -64,6 +64,9 @@ def main() -> None:
     ap.add_argument("--reports", type=Path, default=Path("reports"))
     ap.add_argument("--n-boot", type=int, default=1000)
     ap.add_argument("--seasons", type=int, nargs="+", default=EVAL)
+    ap.add_argument("--extra-seasons", type=int, nargs="*", default=[2022],
+                    help="seasons with (partial) B3 runs that are dumped for combination training "
+                         "but excluded from every metric")
     a = ap.parse_args()
     P = a.processed
     ins = [P / f for f in ("games.parquet", "gamelogs.parquet", "states.parquet", "pa.parquet")] + \
@@ -95,7 +98,7 @@ def main() -> None:
             b2_cache[Tseason] = (tr, dp.Engine(30, 1).solve(dp.kernels_from(tr)))
         return b2_cache[Tseason]
 
-    for S in a.seasons:
+    for S in sorted(set(a.seasons) | set(a.extra_seasons)):
         rec = {}
         files = sorted((runs_root / "full" / str(S)).glob("*.npz"))
         gids = [f.stem for f in files]
@@ -218,10 +221,21 @@ def main() -> None:
         rec["n_pitches"] = int(len(pr))
         rec["pitch_build_s"] = round(time.time() - t, 1)
         pitch_all.append(pr)
-        out["per_season"][str(S)] = rec
+        if S in a.seasons:
+            out["per_season"][str(S)] = rec
 
     pa_df = pd.concat(pa_all, ignore_index=True)
     pt_df = pd.concat(pitch_all, ignore_index=True)
+    # per-PA / per-pitch frames with every model column (inputs of wp.run_b4_combine)
+    keep_pa = [c for c in pa_df.columns if c in ("game_id", "season", "seq", "inning", "half", "outs", "bases", "diff",
+                                                   "home_win", "starter_in", "p_pregame", "progress", "Elo")
+               or c.startswith(("B0", "B1", "B2", "B3"))]
+    pa_df[keep_pa].to_parquet(P / "b3_eval_pa.parquet", index=False)
+    keep_pt = [c for c in pt_df.columns if c not in ("i",)]
+    pt_df[keep_pt].to_parquet(P / "b3_eval_pitch.parquet", index=False)
+    out["extra_seasons_dumped_only"] = sorted(set(a.extra_seasons) - set(a.seasons))
+    pa_df = pa_df[pa_df["season"].isin(a.seasons)].reset_index(drop=True)
+    pt_df = pt_df[pt_df["season"].isin(a.seasons)].reset_index(drop=True)
     SD = strata(pa_df)
     nb = a.n_boot
     out["pa_vs_B1"] = EV.block_bootstrap(pa_df, ["B1", "B3", "B0", "B2"], n_boot=nb, seed=1, strata=SD).to_dict("records")
@@ -259,7 +273,7 @@ def main() -> None:
     a.reports.mkdir(exist_ok=True)
     o = a.reports / "b3_results.json"
     o.write_text(json.dumps(out, indent=1, default=float))
-    write_meta([o], ins, "run_b3_eval", code_files("run_b3_eval", "b3_game", "dp_b3", "ratings", "matchup",
+    write_meta([o, P / "b3_eval_pa.parquet", P / "b3_eval_pitch.parquet"], ins, "run_b3_eval", code_files("run_b3_eval", "b3_game", "dp_b3", "ratings", "matchup",
                                                    "pitching_policy", "count_chain", "dp", "transitions",
                                                    "b0_table", "b1_model", "elo", "evaluate", "run_pipeline"))
     print(json.dumps({k: out[k] for k in ("n_games_total", "led", "seconds")}, indent=1))
