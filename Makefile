@@ -62,3 +62,7 @@ b3: reports/b3_report.md
 # Cross-check against Retrosheet's official parsed play-by-play (zips at the repo root)
 $(P)/crosscheck_retrosheet.json: $(P)/games.parquet 2023plays.zip 2024plays.zip 2025plays.zip $(W)/crosscheck.py $(W)/retro_parse.py
 	$(PY) -m wp.crosscheck
+
+# B4 step 3: Statcast (collected on a local PC with scripts/fetch_statcast.py)
+b4-statcast:
+	$(PY) -m wp.run_b4_statcast
