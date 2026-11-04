@@ -1,8 +1,8 @@
 # 인수인계 (B0–B4 완료 시점)
 
 이 파일 하나로 다음 세션이 이어서 일할 수 있게 정리했다. 상세는 `reports/b0_b1_report.md`, `reports/b2_report.md`, `reports/b3_report.md`, `reports/b4_report.md`에 있다.
-- 작업 브랜치: `claude/elegant-babbage-gngg3x`
-- 저장소: `prism560/baseball_diamond` (이전 이름 `baseballdiamond`)
+- 작업 브랜치: B0–B4는 `claude/elegant-babbage-gngg3x`(`main`에 병합됨), 실시간 단계는 `claude/handoff-docs-review-v2lwvp`
+- 저장소: `prism560/baseballdiamond`
 
 ## 현재 상태
 
@@ -91,3 +91,60 @@
 
 - **(선택) Statcast 수집**: `python scripts/fetch_statcast.py --start 2019-03-01 --end 2025-11-30`을 실행해 `data/external/statcast/`에 넣으면 B4 3단계 게이트를 진행할 수 있다.
 - **(예정) 실시간 피드 수집**: 실시간 단계에서 피드 수집 스크립트를 준비한다. statsapi.mlb.com이 이 환경에서 막혀 있어 로컬 실행이 필요하다.
+
+## 실시간 단계 진행 상황 (2026-11-04, 약 30% 지점에서 중단)
+
+지시서: `claude_code_prompt_realtime.md`와 승인 답신(수정 사항 포함). 사용자 요청으로 중간에 멈췄다.
+
+### 끝난 것
+- **네트워크**: `statsapi.mlb.com`, `baseballsavant.mlb.com`이 이제 열려 있다(사용자가 Allowed domains에 추가).
+- **엔드포인트 확정**(실제 응답 기준, `scripts/fetch_feeds.py` 주석):
+  - `v1/schedule`, `v1.1/game/{pk}/feed/live`, `.../feed/live/timestamps`, `.../feed/live?timecode=`
+  - `diffPatch`는 404라 쓰지 않는다.
+- **피드 수집**: `data/external/feeds/`에 있다(git 제외, 135MB). 다시 받으려면 `python3 scripts/fetch_feeds.py --postseason`(약 2분)을 실행한다.
+  - 2025 정규시즌 32경기: `scripts/feed_games_2025.json`. Retrosheet로 연장, 끝내기, 투수 교체 다수, 5회 이전 대타, 역전, 일방적 경기, 무작위를 골랐다.
+  - 2025 포스트시즌 47경기 전체
+  - 실제 시점 스냅샷 3경기: 813071·813073(챌린지 번복), 813042(연장 끝내기), 1,545개
+  - StatsAPI 코드 목록: `data/external/meta/`
+- **정규화기**: `src/wp/live/codes.py`, `normalize.py`, `reconstruct.py`, `ids.py`, `pa_from_feed.py`
+- **교차검증**(`python -m wp.live.crosscheck_feed` → `reports/live_crosscheck.json`)
+  - 32경기 2,587타석에서 상태·결과·ID·투구 수 불일치 **0건**
+  - ID 매핑 24,672명, 매핑 실패 0명
+  - 확인된 피드 관행:
+    - 자동 고의4구와 피치클락 판정은 `no_pitch` 이벤트(VB/VP/VC/AC)로 온다. Retrosheet의 V/A에 해당한다.
+    - 연장 자동 주자(`runner_placed`)에는 주자 이동 정보가 없다. 주자는 이벤트의 `player`와 `base`로 처리한다.
+    - 대주자는 교체 이벤트의 `base`로 그 루를 차지한다.
+    - **포스트시즌에는 자동 주자가 없다**(xrule=False).
+- **서빙 골격**: `models.py`(시즌 묶음, 적재 약 74초), `tracker.py`(evaluate_game의 증분판), `solver.py`(동기 / fork 워커), `serving.py`(GameServer: 중복·정정·역행 처리, B2E 대체, 메시지 7.2), `output.py`(퍼센트, LED 히스테리시스), `log.py`(구조화 로그, `SENTRY_DSN` 선택 연동), `offline_ref.py`(오프라인 기준값)
+- **오프라인 일치 (1경기만 확인)**: MIA202508230의 98타석 시작 시점에서 B3·B2E·AVG 차이가 최대 1.1e-16이다.
+
+### 측정값 (참고)
+- B3 시즌 문맥 구축 약 60초
+- 경기 전 계산 6.2초
+- 경기당 재계산 21회, 합계 14.7초
+- 전체 해 1개는 116MB다. 워커에서 받는 비용은 unpickle 0.02초다.
+
+### 남은 일 (지시서 순서)
+1. 투구 단위 오프라인 일치 검증, 그리고 주자 이벤트 뒤 투구의 의도된 차이 분포(평균, 최대, 2.5%p 초과 비율)
+2. `replay.py` 하네스
+   - 합성 스냅샷과 실제 스냅샷 재생, 둘의 대조
+   - 속도 조절, 장애 주입
+   - 타임라인 캐시: `timelines/`(git 추적), 경로는 `TIMELINE_CACHE_DIR`
+3. 32+47경기 전체 검증(종료 일관성, 장애 내성, 지연 분포)
+4. API 서버(FastAPI: REST, WebSocket, 리플레이 제어, CORS, OpenAPI, 디버그 페이지), 선택 옵션 MQTT
+5. `scripts/replay.py`, `scripts/update_ratings_daily.py`
+   - 피드 PA로 `pa_live.parquet`, `games_live.parquet`, `gamelogs_live.parquet`를 만든다. `models.py`가 이미 이 파일을 읽는다.
+   - 2026 시즌 B2E 계수 적합
+6. `Dockerfile`, `.env.example`(`PORT`, `CORS_ORIGINS`, `TIMELINE_CACHE_DIR`, `FEED_SOURCE`, `MODEL`), `/health` 로컬 확인
+7. 문서와 리포트
+   - `docs/API.md`(데이터 소스 절 포함), `docs/RUNBOOK.md`, `docs/ROADMAP.md`
+   - `reports/realtime_report.md`
+   - `samples/timeline_<id>.json` 3개
+   - 테스트(매핑 표 항목별 포함)
+
+### 알아둘 점
+- 포스트시즌 경기는 Retrosheet에 없다. 따라서 오프라인 일치 검증은 정규시즌 경기만 할 수 있다. 포스트시즌은 종료 일관성, 장애 내성, 지연만 검증한다.
+- 포스트시즌 Elo는 정규시즌 종료 시점 레이팅으로 계산한다(포스트시즌 경기로 갱신하지 않음). 리포트에 적어야 한다.
+- 라인업 변경은 오프라인과 같이 **새 선수가 타석에 설 때** 반영한다. 대주자나 수비 교체는 그 선수가 처음 타석에 설 때 재계산된다.
+- 타석 도중 투수가 바뀌면, 실시간은 그 시점의 투수를 쓰고 오프라인은 타석을 끝낸 투수를 쓴다. 이 차이는 의도된 것으로 분류한다.
+- 컨테이너가 새로 뜨면 `pip install -r requirements.txt fastapi uvicorn httpx`를 실행한 뒤 `make data/processed/pa.parquet`(약 6분)을 돌린다.

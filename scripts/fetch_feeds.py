@@ -143,6 +143,15 @@ def fetch_game(c: Client, out: Path, pk: int, snapshots: bool = False) -> None:
                 print(f"    {i + 1}/{len(todo)}", flush=True)
 
 
+def save_index(p: Path, index: dict) -> None:
+    """Merge with the file on disk (another fetch may be running) and write atomically."""
+    cur = json.loads(p.read_text()) if p.exists() else {}
+    cur.update(index)
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(json.dumps(cur, indent=1))
+    tmp.replace(p)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, default=Path("data/external/feeds"))
@@ -190,10 +199,10 @@ def main() -> None:
             continue
         index[str(pk)] = e
         if (i + 1) % 10 == 0:
-            idx_p.write_text(json.dumps(index, indent=1))
+            save_index(idx_p, index)
             print(f"{i + 1}/{len(want)} games, {c.n_req} requests, {c.bytes / 1e6:.0f} MB, "
                   f"{time.time() - t0:.0f}s", flush=True)
-    idx_p.write_text(json.dumps(index, indent=1))
+    save_index(idx_p, index)
     print(f"done: {c.n_req} requests, {c.bytes / 1e6:.0f} MB (uncompressed), {time.time() - t0:.0f}s")
 
 
