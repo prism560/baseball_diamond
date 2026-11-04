@@ -1,0 +1,285 @@
+[
+ {
+  "retro_id": "ANA202508120",
+  "tags": [
+   "many_pitching_changes"
+  ]
+ },
+ {
+  "retro_id": "ARI202504120",
+  "tags": [
+   "comeback"
+  ]
+ },
+ {
+  "retro_id": "ARI202507190",
+  "tags": [
+   "blowout"
+  ]
+ },
+ {
+  "retro_id": "ARI202509160",
+  "tags": [
+   "walkoff"
+  ]
+ },
+ {
+  "retro_id": "ATL202506140",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "ATL202508092",
+  "tags": [
+   "comeback"
+  ]
+ },
+ {
+  "retro_id": "BAL202504190",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "BAL202505260",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "BAL202506120",
+  "tags": [
+   "early_pinch_hitter"
+  ]
+ },
+ {
+  "retro_id": "BAL202506270",
+  "tags": [
+   "early_pinch_hitter"
+  ]
+ },
+ {
+  "retro_id": "CHA202505090",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "CIN202506070",
+  "tags": [
+   "blowout"
+  ]
+ },
+ {
+  "retro_id": "CIN202508160",
+  "tags": [
+   "many_pitching_changes"
+  ]
+ },
+ {
+  "retro_id": "DET202505120",
+  "tags": [
+   "early_pinch_hitter"
+  ]
+ },
+ {
+  "retro_id": "HOU202505300",
+  "tags": [
+   "walkoff"
+  ]
+ },
+ {
+  "retro_id": "KCA202504220",
+  "tags": [
+   "extra"
+  ]
+ },
+ {
+  "retro_id": "KCA202508210",
+  "tags": [
+   "early_pinch_hitter"
+  ]
+ },
+ {
+  "retro_id": "LAN202507220",
+  "tags": [
+   "many_pitching_changes"
+  ]
+ },
+ {
+  "retro_id": "LAN202507230",
+  "tags": [
+   "walkoff"
+  ]
+ },
+ {
+  "retro_id": "MIA202508230",
+  "tags": [
+   "extra"
+  ]
+ },
+ {
+  "retro_id": "MIN202504250",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "MIN202506120",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "MIN202508190",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "PHI202505040",
+  "tags": [
+   "many_pitching_changes"
+  ]
+ },
+ {
+  "retro_id": "SDN202509080",
+  "tags": [
+   "extra"
+  ]
+ },
+ {
+  "retro_id": "SFN202506250",
+  "tags": [
+   "extra"
+  ]
+ },
+ {
+  "retro_id": "TBA202504190",
+  "tags": [
+   "comeback"
+  ]
+ },
+ {
+  "retro_id": "TBA202507020",
+  "tags": [
+   "random"
+  ]
+ },
+ {
+  "retro_id": "TEX202506280",
+  "tags": [
+   "extra_walkoff"
+  ]
+ },
+ {
+  "retro_id": "TOR202505220",
+  "tags": [
+   "extra"
+  ]
+ },
+ {
+  "retro_id": "TOR202507040",
+  "tags": [
+   "extra_walkoff"
+  ]
+ },
+ {
+  "retro_id": "TOR202507050",
+  "tags": [
+   "extra"
+  ]
+ },
+ {
+  "gamePk": 813032,
+  "tags": [
+   "postseason",
+   "extra",
+   "walkoff",
+   "challenge_overturned"
+  ]
+ },
+ {
+  "gamePk": 813024,
+  "tags": [
+   "postseason",
+   "extra"
+  ]
+ },
+ {
+  "gamePk": 813054,
+  "tags": [
+   "postseason",
+   "extra",
+   "walkoff",
+   "challenge_overturned"
+  ]
+ },
+ {
+  "gamePk": 813042,
+  "tags": [
+   "postseason",
+   "extra",
+   "walkoff"
+  ],
+  "snapshots": true
+ },
+ {
+  "gamePk": 813058,
+  "tags": [
+   "postseason",
+   "extra"
+  ]
+ },
+ {
+  "gamePk": 813071,
+  "tags": [
+   "postseason",
+   "challenge_overturned"
+  ],
+  "snapshots": true
+ },
+ {
+  "gamePk": 813073,
+  "tags": [
+   "postseason",
+   "challenge_overturned"
+  ],
+  "snapshots": true
+ },
+ {
+  "gamePk": 813035,
+  "tags": [
+   "postseason",
+   "challenge_overturned"
+  ]
+ },
+ {
+  "gamePk": 813059,
+  "tags": [
+   "postseason",
+   "challenge_overturned"
+  ]
+ },
+ {
+  "gamePk": 813027,
+  "tags": [
+   "postseason",
+   "blowout"
+  ]
+ },
+ {
+  "gamePk": 813037,
+  "tags": [
+   "postseason"
+  ]
+ },
+ {
+  "gamePk": 813022,
+  "tags": [
+   "postseason",
+   "challenge_overturned"
+  ]
+ }
+]
