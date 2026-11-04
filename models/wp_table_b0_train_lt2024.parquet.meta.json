@@ -1,0 +1,18 @@
+{
+ "stage": "run_pipeline",
+ "created": "2026-11-02T15:35:04+0000",
+ "sha256": "30edf428b0adf24963571f296055c4ca5cfacf57c5ab10e235bc6f8a58f33353",
+ "inputs": {
+  "data/processed/games.parquet": "64cb6e15aeae6e4a63f2dec63724f7ca091077ae701d166a0b4a20a4cf6f0d85",
+  "data/processed/gamelogs.parquet": "d0262ef26b6bef9ba64f8a4ab056cf7415fa6e286530e3dc85e90f765e935bd8",
+  "data/processed/states.parquet": "7a3ab3d359c6233b304884e27d3f05dca2467fd0b57f300499009f575eb8f008"
+ },
+ "code": {
+  "src/wp/run_pipeline.py": "3ea1c2d9093f54dbfc98b2d444ccf4c399ff0a961a33fa4e023200539615bdec",
+  "src/wp/b0_table.py": "2185f5a0eb72eac2f43397a9b4590d54af4f2acf9d07452cd45cf7396598d63e",
+  "src/wp/b1_model.py": "80aaa87f9c78cb4a25d61fd37b17ca80871db41508648a0c20a2fe4c61a3d877",
+  "src/wp/elo.py": "56ccdabfcd64dd7fae422c7b2196ea0e5490f0393e88015ef9c1a8e68aa879ba",
+  "src/wp/evaluate.py": "a90d9a1ac4eaa1f9cbe3e0b3d01a2802202dc938f4aa1255efe15c29b6424191",
+  "src/wp/states.py": "1c4bcf7082046699f2edb3f8ac0a7b6f7b3414b9d03e330bd39a8e029e4b70cb"
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "live_feed_availability": [
+  {
+   "statcast": "pitch_type",
+   "live_feed": "playEvents[].details.type.code",
+   "used": true
+  },
+  {
+   "statcast": "release_speed",
+   "live_feed": "playEvents[].pitchData.startSpeed",
+   "used": true
+  },
+  {
+   "statcast": "pfx_x / pfx_z",
+   "live_feed": "playEvents[].pitchData.breaks (breakHorizontal, breakVerticalInduced)",
+   "used": true
+  },
+  {
+   "statcast": "plate_x / plate_z",
+   "live_feed": "playEvents[].pitchData.coordinates (pX, pZ)",
+   "used": false
+  },
+  {
+   "statcast": "zone",
+   "live_feed": "playEvents[].pitchData.zone",
+   "used": false
+  },
+  {
+   "statcast": "release_spin_rate",
+   "live_feed": "playEvents[].pitchData.breaks.spinRate",
+   "used": false
+  },
+  {
+   "statcast": "launch_speed / launch_angle",
+   "live_feed": "hitData (after contact only)",
+   "used": false
+  },
+  {
+   "statcast": "estimated_woba_using_speedangle",
+   "live_feed": "not in the live feed (Savant model output)",
+   "used": false
+  }
+ ],
+ "gate_threshold_pa_logloss": 0.002,
+ "status": "미실시: Statcast(baseballsavant.mlb.com)와 MLB Stats API(statsapi.mlb.com)가 이 환경에서 차단됨. scripts/fetch_statcast.py를 로컬 PC에서 실행해 data/external/statcast/에 넣으면 진행."
+}
