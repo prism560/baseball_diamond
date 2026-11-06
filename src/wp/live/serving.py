@@ -72,6 +72,7 @@ class GameServer:
         self.lat: list = []             # per-update processing seconds
         self.n_dup = self.n_stale = 0
         self._solver_seen = 0
+        self.n_completed = 0
         self.meta: dict = {}
 
     # ---- setup -------------------------------------------------------------
@@ -158,8 +159,14 @@ class GameServer:
     def _log_corrections(self, k: int, new_points: list) -> None:
         old = {p["key"]: (p, self.msgs.get(p["key"])) for p in self.points[k:]}
         newk = {p["key"]: p for p in new_points[k:]}
+        last_key = self.points[-1]["key"] if self.points else None
         for key, (p, m) in old.items():
             q = newk.get(key)
+            if q is not None and key == last_key and q.get("ehash") == p.get("ehash"):
+                # the latest event itself is unchanged; its runner movements / result arrived
+                # (e.g. caught stealing on the pitch): completion, not a correction
+                self.n_completed += 1
+                continue
             if q is None or q["hash"] != p["hash"]:
                 rec = {"key": list(map(str, key)), "kind": "removed" if q is None else "changed",
                        "inning": p["inning"], "half": p["half"], "last_event_old": p["last_event"],

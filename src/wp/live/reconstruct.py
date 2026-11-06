@@ -122,7 +122,10 @@ def reconstruct(g: NormGame) -> GameView:
         if extra:
             p.update(extra)
         # content hash: the event itself + the state after it (duplicates vs corrections)
-        p["hash"] = _h([phase, ev.hash if ev is not None else None, p["outs"], p["bases"], p["away"], p["home"],
+        # (pitch vs pitch_end is not content: a PA can end on an ordinary-looking pitch,
+        #  e.g. catcher's interference on a foul, which is known only with the result)
+        p["ehash"] = ev.hash if ev is not None else None
+        p["hash"] = _h(["pitch" if phase == "pitch_end" else phase, ev.hash if ev is not None else None, p["outs"], p["bases"], p["away"], p["home"],
                         p["balls"], p["strikes"], p["batter"], p["pitcher"], p.get("o")])
         points.append(p)
 

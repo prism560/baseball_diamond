@@ -2,7 +2,7 @@
 
 1구마다 "원정 24% / 홈 76%" 형태의 승리확률을 내는 시스템을 단계별로 만든다.
 
-**현재 상태**: B0–B4 완료. 기본 서빙 모델은 AVG(B3와 B2E의 로짓 가중 평균)이고, 실시간 파이프라인은 아직 착수하지 않았다. 인수인계 문서는 [`docs/HANDOFF.md`](docs/HANDOFF.md)다.
+**현재 상태**: B0–B4와 실시간 파이프라인(①)이 완료됐다. 기본 서빙 모델은 AVG(B3와 B2E의 로짓 가중 평균)다. 실시간 서버와 리플레이 API는 [`docs/API.md`](docs/API.md), 운영 절차는 [`docs/RUNBOOK.md`](docs/RUNBOOK.md), 다음 단계는 [`docs/ROADMAP.md`](docs/ROADMAP.md)에 있다. 인수인계 문서는 [`docs/HANDOFF.md`](docs/HANDOFF.md)다.
 
 저장소 루트의 `2023plays.zip`–`2025plays.zip`은 Retrosheet가 배포하는 공식 파싱 play-by-play 파일이다(사용자 업로드). `wp.crosscheck`(`make data/processed/crosscheck_retrosheet.json`)가 그 자리에서 읽어 우리 파서 결과와 행 단위로 교차검증한다.
 
@@ -16,6 +16,22 @@
 - **B4** — B3 보완(구장 중립 능력치, 다항 로지스틱 매치업), 모델 결합(B3와 B2E의 로짓 평균이 기본 서빙 모델), 구속·구종(Statcast 대기), 당일 컨디션(게이트 미통과), Retrosheet 공식 파싱 파일과 행 단위 교차검증.
 
 결과와 설계 근거는 [`reports/b4_report.md`](reports/b4_report.md), [`reports/b0_b1_report.md`](reports/b0_b1_report.md), [`reports/b2_report.md`](reports/b2_report.md), [`reports/b3_report.md`](reports/b3_report.md)에 있다. B3 확장 지점은 [`docs/B3_INTERFACE.md`](docs/B3_INTERFACE.md).
+
+## 실시간 서버
+
+```bash
+pip install -r requirements.txt -r requirements-server.txt
+```
+
+```bash
+PYTHONPATH=src uvicorn wp.live.api:app --port 8000
+```
+
+리플레이 전용으로 뜨며, `/debug`에서 확인할 수 있다. 실시간 모드는 `FEED_SOURCE=statsapi`로 켠다.
+
+## 데이터 저작권 고지
+
+경기 피드 데이터는 MLB Advanced Media의 MLB StatsAPI에서 받는다. Copyright MLB Advanced Media, L.P. 이 저장소의 사용은 개인·비상업 용도에 한한다. `data/external/feeds/`의 피드 원본은 저장소에 포함하지 않는다. `timelines/`와 `samples/`에는 피드에서 파생한 경기 상태와 선수 표시 이름이 들어 있다. 공개 배포 전에 이용 조건을 확인해야 한다(`reports/realtime_report.md`의 "확인 필요 사항").
 
 ## 데이터
 
