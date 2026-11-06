@@ -143,9 +143,12 @@
 - **연장 자동 주자**: 정규시즌은 이벤트가 오기 전에 하프 시작 시점에서 미리 둔다.
 
 ### 알아둘 점
-- **`test_manifest` 2건 실패**: `results.json`, `b2_results.json`이 오래된 산출물로 판정된다.
-  - 이 컨테이너에서 `games.parquet`을 다시 만든 탓이다. 이번 작업의 변경과 무관하고, 변경 전 상태에서도 똑같이 실패했다.
-  - `make b0b1 b2`(약 3분)로 다시 만들면 해결된다. 이번에는 B0–B2 산출물을 건드리지 않았다.
+- **B0–B2 산출물 재생성 (2026-11-06)**: 새 컨테이너에서 `games.parquet`을 다시 만들면서 `test_manifest` 2건이 실패했다.
+  - `make b0b1 b2`로 다시 만들었다.
+  - 모델 테이블 값은 이전과 같다(차이 0). 결과 JSON은 실행 시간 측정값만 바뀌었다.
+  - B4 교차검증 산출물도 이 컨테이너에서 만들었다(`make data/processed/crosscheck_retrosheet.json`, git 제외).
+  - 그 결과 전체 테스트 263개가 모두 통과한다(건너뜀 0).
+  - 컨테이너를 새로 띄우면 `data/`가 사라지므로, 같은 결과를 보려면 이 두 `make`를 다시 돌린다.
 - **Docker 빌드**: 이 환경에서는 Docker Hub가 429를 반환하고 TLS 프록시 CA가 필요하다. `docs/RUNBOOK.md` 4절의 빌드 명령을 쓴다.
 - **컨테이너 재시작 후**
   1. `pip install -r requirements.txt -r requirements-server.txt`
@@ -153,5 +156,17 @@
   3. `make live-feeds`(약 2분)
   4. 실제 스냅샷이 필요하면 `python3 scripts/fetch_feeds.py --snapshots 813071 813073 813042`(약 17분)
 
+### 상태
+- PR: prism560/baseball_diamond#2 (`claude/handoff-docs-review-v2lwvp` → `main`). 병합은 사용자가 직접 한다. CI는 없다.
+- 포스트시즌 처리 세 가지는 알려진 한계로 두고 그대로 간다(사용자 결정, 2026-11-06).
+  - Elo는 정규시즌 종료 시점 값을 쓴다.
+  - 불펜은 리그 평균으로 처리한다.
+  - Retrosheet에 없어 오프라인 일치 검증을 할 수 없다.
+
 ### 다음 작업
-- `docs/ROADMAP.md` ②: 리플레이 화면 시안. 입력은 `samples/timeline_*.json`과 `docs/API.md` 2절이다.
+- `docs/ROADMAP.md` ②: 리플레이 화면 시안(별도 Claude 대화에서 아티팩트로 만든다).
+  - 입력: `samples/timeline_*.json` 3개(접전 역전승 ATL202508092, 연장 18회 끝내기 LAN202510270, 일방적 경기 CIN202506070)와 `docs/API.md` 2절의 메시지 필드
+- 시즌 개막 전 준비
+  1. `docs/RUNBOOK.md` 0–1절대로 모델과 능력치를 준비한다.
+  2. 2026 시즌 B2E 계수는 `models/live/b2e_2026.json`에 이미 있다.
+  3. 개막 후 첫 실제 경기에서 피드 코드(ABS 챌린지 `MJ`/`NJ` 등)와 정정 동작을 확인한다.
