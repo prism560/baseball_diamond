@@ -37,7 +37,7 @@ import urllib.request
 from pathlib import Path
 
 API = "https://statsapi.mlb.com/api"
-UA = "baseballdiamond-wp-replay/1.0 (personal, non-commercial)"
+UA = "baseball_diamond-wp-replay/1.0 (personal, non-commercial)"
 # Retrosheet team code -> MLB team id (2025; checked against /api/v1/teams?sportId=1&season=2025)
 RETRO_TEAM = {"ANA": 108, "ARI": 109, "BAL": 110, "BOS": 111, "CHN": 112, "CIN": 113, "CLE": 114,
               "COL": 115, "DET": 116, "HOU": 117, "KCA": 118, "LAN": 119, "WAS": 120, "NYN": 121,

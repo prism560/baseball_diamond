@@ -2,7 +2,7 @@
 
 이 파일 하나로 다음 세션이 이어서 일할 수 있게 정리했다. 상세는 `reports/b0_b1_report.md`, `reports/b2_report.md`, `reports/b3_report.md`, `reports/b4_report.md`에 있다.
 - 작업 브랜치: B0–B4는 `claude/elegant-babbage-gngg3x`(`main`에 병합됨), 실시간 단계는 `claude/handoff-docs-review-v2lwvp`
-- 저장소: `prism560/baseballdiamond`
+- 저장소: `prism560/baseball_diamond`
 
 ## 현재 상태
 

@@ -66,7 +66,7 @@ def main() -> None:
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     s = requests.Session()
-    s.headers["User-Agent"] = "baseballdiamond-research"
+    s.headers["User-Agent"] = "baseball_diamond-research"
     d = date.fromisoformat(a.start)
     end = date.fromisoformat(a.end)
     by_year: dict[int, list] = {}

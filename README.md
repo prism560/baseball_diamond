@@ -1,4 +1,4 @@
-# baseballdiamond — MLB 실시간 승리확률
+# baseball_diamond — MLB 실시간 승리확률
 
 1구마다 "원정 24% / 홈 76%" 형태의 승리확률을 내는 시스템을 단계별로 만든다.
 
