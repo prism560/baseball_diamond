@@ -1,8 +1,8 @@
-# 인수인계 (B0–B4 완료 시점)
+# 인수인계 (B0–B4 + 실시간 파이프라인 완료 시점)
 
-이 파일 하나로 다음 세션이 이어서 일할 수 있게 정리했다. 상세는 `reports/b0_b1_report.md`, `reports/b2_report.md`, `reports/b3_report.md`, `reports/b4_report.md`에 있다.
-- 작업 브랜치: `claude/elegant-babbage-gngg3x`
-- 저장소: `prism560/baseball_diamond` (이전 이름 `baseballdiamond`)
+이 파일 하나로 다음 세션이 이어서 일할 수 있게 정리했다. 다음 단계(②–⑤)는 `docs/ROADMAP.md`에 있다. 상세는 `reports/b0_b1_report.md`, `reports/b2_report.md`, `reports/b3_report.md`, `reports/b4_report.md`에 있다.
+- 작업 브랜치: B0–B4는 `claude/elegant-babbage-gngg3x`(`main`에 병합됨), 실시간 단계는 `claude/handoff-docs-review-v2lwvp`
+- 저장소: `prism560/baseball_diamond`
 
 ## 현재 상태
 
@@ -50,7 +50,7 @@
 
 ## 환경 제약
 
-- **차단된 사이트**: retrosheet.org, statsapi.mlb.com, baseballsavant.mlb.com.
+- **차단된 사이트**: retrosheet.org. statsapi.mlb.com과 baseballsavant.mlb.com은 2026-11-04부터 허용되어 있다(환경 설정 Allowed domains).
   - Retrosheet 원본은 GitHub 미러 `chadwickbureau/retrosheet`에서 받는다.
   - 선수 ID 매핑은 `chadwickbureau/register`를 쓴다.
 - **외부 C 코드 빌드 불가**: 정책상 Chadwick을 빌드할 수 없어 자체 파서를 쓴다.
@@ -77,17 +77,96 @@
 - `b3-runs`의 4코어 기준 내역: 본 비교 약 6.5시간, ablation 약 5시간, 2022 시즌 부분집합 약 1시간.
 - `b4`의 30분에는 `wp.run_b4_q`, `wp.run_b4_condition`, `wp.run_b4_combine`이 포함된다.
 
-## 다음 작업
+## 실시간 파이프라인 (① 완료, 2026-11-06)
 
-- **실시간 파이프라인**: `src/wp/live/`는 아직 없다. 지시서는 별도로 받는다.
-- **재사용할 함수**:
-  - `wp.b3_game.build_context`, `game_inputs`, `evaluate_game`
-  - `wp.dp_b3.Engine.solve`: `override`, `start`, `kernel_cache` 인자 사용
-  - `wp.count_chain.fit`
-  - `wp.wp_b2.PitchWP`: B2 조회
-- **ID 매핑**: 라이브 피드의 MLBAM ID는 `wp.statcast.mlbam_to_retro`로 Retrosheet ID에 대응시킨다.
+지시서 `claude_code_prompt_realtime.md`와 승인 답신대로 만들었다. 결과는 `reports/realtime_report.md`에 있다.
 
-## 사용자가 로컬에서 할 일
+### 결과 요약
+- **정규화 교차검증**: 정규시즌 32경기 2,587타석에서 불일치 0건. 상태, 결과, ID, 투구 수를 비교했다.
+- **오프라인 일치**: 정규시즌 32경기에서 1e-6 초과 0건.
+  - 타석 시작 2,586시점: B3·B2E·AVG 최대 차이 2.2e-16
+  - 주자 이벤트 전 투구 7,235시점: 차이 0
+  - 주자 이벤트 뒤 투구(의도된 차이): 평균 3.1%p, 최대 26.7%p, 2.5%p 초과 27%
+- **종료 일관성**: 79/79경기가 최종 점수에 맞는 100/0으로 끝났다.
+- **장애 주입**(중복, 순서, 누락, 정정, 네트워크 오류): 79/79경기에서 모든 시점의 최종 값이 장애 없는 재생과 같았다.
+- **실제 스냅샷 3경기**: 합성 스냅샷과 최종 값이 같다.
+  - 챌린지 번복은 리뷰가 끝난 뒤에야 피드에 게시되어 정정으로 나타나지 않았다.
+- **지연**(스냅샷 수신부터 출력까지): 비동기 경로 중앙값 4.4ms, 95% 8.7ms, 최대 28ms. 목표 100ms 이하를 만족한다.
+- **B3 계산 시간**(단일 스레드)
+  - 경기 전 계산: 중앙값 5.4초
+  - 라인업 변경 재계산: 중앙값 1.8초, 최대 4.8초
+  - 투수 교체 재계산: 0.22초
+- **ID 매핑 실패**: 0명.
+- **2025 수집 피드에서 모르는 코드**: 0건.
 
-- **(선택) Statcast 수집**: `python scripts/fetch_statcast.py --start 2019-03-01 --end 2025-11-30`을 실행해 `data/external/statcast/`에 넣으면 B4 3단계 게이트를 진행할 수 있다.
-- **(예정) 실시간 피드 수집**: 실시간 단계에서 피드 수집 스크립트를 준비한다. statsapi.mlb.com이 이 환경에서 막혀 있어 로컬 실행이 필요하다.
+### 구성 (`src/wp/live/`)
+
+| 파일 | 역할 |
+|---|---|
+| `codes.py` | 매핑 표 |
+| `normalize.py` | 피드 → 이벤트 |
+| `reconstruct.py` | 매번 전체 피드에서 상태, PA 행, 시점을 다시 만든다 |
+| `ids.py` | ID 매핑 |
+| `pa_from_feed.py` | 피드 → PA 표 |
+| `crosscheck_feed.py` | 피드 PA와 Retrosheet PA 대조 |
+| `models.py` | 시즌 모델 묶음. 적재 약 50–75초, 메모리 약 2GB |
+| `tracker.py` | `evaluate_game`의 증분판 |
+| `solver.py` | 동기 / fork 워커 |
+| `serving.py` | GameServer: 중복·정정·역행 처리, B2E 대체, 메시지 생성 |
+| `output.py` | 출력 규칙 |
+| `log.py` | 구조화 로그, Sentry 선택 연동 |
+| `feed_client.py` | 폴링 예의 |
+| `replay.py` | 리플레이 하네스, 타임라인 캐시 |
+| `offline_ref.py`, `validate_offline.py` | 오프라인 일치 검증 |
+| `api.py`, `debug.html` | API 서버, 디버그 페이지 |
+| `report_realtime.py` | 리포트 생성 |
+
+**스크립트**: `scripts/fetch_feeds.py`, `replay.py`, `update_ratings_daily.py`, `make_samples.py`
+
+**문서**: `docs/API.md`(엔드포인트, 메시지 필드, 데이터 소스), `docs/RUNBOOK.md`(매일 운영, Docker), `docs/ROADMAP.md`
+
+**git 추적 산출물**
+- `timelines/`: 79경기 리플레이 캐시, 1.9MB
+- `samples/`: 시안용 3경기
+- `models/live/b2e_2026.json`: 2026 시즌 B2E 계수
+- `docs/openapi.json`
+
+### 결정과 관행
+- **라인업 변경**: 오프라인과 같이 새 선수가 타석에 설 때 재계산한다.
+- **타석 중 투수 교체**: 그 시점의 투수를 쓴다(의도된 차이).
+- **포스트시즌**: 자동 주자가 없다(xrule=False).
+  - Elo는 정규시즌 종료 시점 값을 쓴다.
+  - 불펜 등급이 없어 리그 평균으로 처리한다. 둘 다 리포트의 한계에 적었다.
+- **정정 판정**: 같은 키에서 해시가 바뀌면 정정이다. 해시는 이벤트 내용과 그 시점 이후 상태로 만든다. 다음은 정정으로 세지 않는다.
+  - 최신 이벤트의 결과·주자 이동이 나중에 게시된 경우("completed")
+  - 타석을 끝낸 투구(`pitch_end`)를 결과가 온 뒤에야 알 수 있는 경우
+- **연장 자동 주자**: 정규시즌은 이벤트가 오기 전에 하프 시작 시점에서 미리 둔다.
+
+### 알아둘 점
+- **B0–B2 산출물 재생성 (2026-11-06)**: 새 컨테이너에서 `games.parquet`을 다시 만들면서 `test_manifest` 2건이 실패했다.
+  - `make b0b1 b2`로 다시 만들었다.
+  - 모델 테이블 값은 이전과 같다(차이 0). 결과 JSON은 실행 시간 측정값만 바뀌었다.
+  - B4 교차검증 산출물도 이 컨테이너에서 만들었다(`make data/processed/crosscheck_retrosheet.json`, git 제외).
+  - 그 결과 전체 테스트 263개가 모두 통과한다(건너뜀 0).
+  - 컨테이너를 새로 띄우면 `data/`가 사라지므로, 같은 결과를 보려면 이 두 `make`를 다시 돌린다.
+- **Docker 빌드**: 이 환경에서는 Docker Hub가 429를 반환하고 TLS 프록시 CA가 필요하다. `docs/RUNBOOK.md` 4절의 빌드 명령을 쓴다.
+- **컨테이너 재시작 후**
+  1. `pip install -r requirements.txt -r requirements-server.txt`
+  2. `make data/processed/pa.parquet`(약 6분)
+  3. `make live-feeds`(약 2분)
+  4. 실제 스냅샷이 필요하면 `python3 scripts/fetch_feeds.py --snapshots 813071 813073 813042`(약 17분)
+
+### 상태
+- PR: prism560/baseball_diamond#2 (`claude/handoff-docs-review-v2lwvp` → `main`). 병합은 사용자가 직접 한다. CI는 없다.
+- 포스트시즌 처리 세 가지는 알려진 한계로 두고 그대로 간다(사용자 결정, 2026-11-06).
+  - Elo는 정규시즌 종료 시점 값을 쓴다.
+  - 불펜은 리그 평균으로 처리한다.
+  - Retrosheet에 없어 오프라인 일치 검증을 할 수 없다.
+
+### 다음 작업
+- `docs/ROADMAP.md` ②: 리플레이 화면 시안(별도 Claude 대화에서 아티팩트로 만든다).
+  - 입력: `samples/timeline_*.json` 3개(접전 역전승 ATL202508092, 연장 18회 끝내기 LAN202510270, 일방적 경기 CIN202506070)와 `docs/API.md` 2절의 메시지 필드
+- 시즌 개막 전 준비
+  1. `docs/RUNBOOK.md` 0–1절대로 모델과 능력치를 준비한다.
+  2. 2026 시즌 B2E 계수는 `models/live/b2e_2026.json`에 이미 있다.
+  3. 개막 후 첫 실제 경기에서 피드 코드(ABS 챌린지 `MJ`/`NJ` 등)와 정정 동작을 확인한다.

@@ -1,0 +1,244 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "baseball_diamond WP API",
+  "description": "MLB win probability, live and replay. Data (c) MLB Advanced Media, personal non-commercial use.",
+  "version": "1.0"
+ },
+ "paths": {
+  "/health": {
+   "get": {
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/today": {
+   "get": {
+    "summary": "Games Today",
+    "operationId": "games_today_games_today_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gid}/state": {
+   "get": {
+    "summary": "Game State",
+    "operationId": "game_state_games__gid__state_get",
+    "parameters": [
+     {
+      "name": "gid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Gid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gid}/timeline": {
+   "get": {
+    "summary": "Game Timeline",
+    "operationId": "game_timeline_games__gid__timeline_get",
+    "parameters": [
+     {
+      "name": "gid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Gid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gid}/corrections": {
+   "get": {
+    "summary": "Game Corrections",
+    "operationId": "game_corrections_games__gid__corrections_get",
+    "parameters": [
+     {
+      "name": "gid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Gid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/replay/games": {
+   "get": {
+    "summary": "Replay Games",
+    "operationId": "replay_games_replay_games_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/debug": {
+   "get": {
+    "summary": "Debug Page",
+    "operationId": "debug_page_debug_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "text/html": {
+        "schema": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}

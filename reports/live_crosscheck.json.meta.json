@@ -1,0 +1,17 @@
+{
+ "stage": "live_crosscheck",
+ "created": "2026-11-06T07:02:33+0000",
+ "sha256": "30f1db89e730ff2f914c4aa634d98b8cd6a19d2532acda95226ab6292df0fcd7",
+ "inputs": {
+  "data/processed/pa.parquet": "81aa97db873dbc1fb9d20b5dd70d9c72d116a0b2391a1bc20cfa1b21a16d5f1e",
+  "data/external/feeds/index.json": "4cbfea34c11242e5d7ada8cc0228440e93552735069771a9a99b042edbba9659"
+ },
+ "code": {
+  "src/wp/live/crosscheck_feed.py": "d0b1534d9a24cc43fd7f5c5cecbcb71d57926b70a951ec2ff51748c421306022",
+  "src/wp/live/normalize.py": "68b745eb82bec5bab7966f7fa6fc4b22ef112abc70ebfc0839cfe7965048bd8c",
+  "src/wp/live/reconstruct.py": "c673b5938f541a0316c8756eae2bb7690ba52197720ed7edfbf2f7c8cca0b5fb",
+  "src/wp/live/codes.py": "c38302f8a3cd0f2412951d1f74b40a5656739f7c8616fd7047548d173e9845b2",
+  "src/wp/live/ids.py": "4ea634e01efa71bfc26cb38446917a8792e8d24732b8c2f3c4f2fb0186b7904a",
+  "src/wp/live/pa_from_feed.py": "6bdcb2d3d076af44c4d18f7607a6f7fb673aadc64bd58907af4614f18fbbada4"
+ }
+}

@@ -82,3 +82,27 @@ reports/b4_report.md: reports/b4_q.json reports/b4_condition.json reports/b4_com
 	$(PY) -m wp.report_b4
 
 b4: reports/b4_report.md
+
+# ---- real-time pipeline (src/wp/live, docs/RUNBOOK.md) ----
+.PHONY: live-feeds live-replay live-report live-samples live-test docker
+live-feeds:
+	python3 scripts/fetch_feeds.py --postseason
+
+reports/live_crosscheck.json: $(P)/pa.parquet $(W)/live/crosscheck_feed.py $(W)/live/normalize.py $(W)/live/reconstruct.py $(W)/live/codes.py
+	$(PY) -m wp.live.crosscheck_feed
+
+# resumable per game (data/live/replay_runs/); 2 processes about 40-60 min
+live-replay: reports/live_crosscheck.json
+	OMP_NUM_THREADS=1 $(PY) scripts/replay.py --part 0 --parts 2 & OMP_NUM_THREADS=1 $(PY) scripts/replay.py --part 1 --parts 2; wait
+
+live-report: reports/live_crosscheck.json
+	$(PY) -m wp.live.report_realtime
+
+live-samples:
+	python3 scripts/make_samples.py
+
+live-test:
+	$(PY) -m pytest -q tests/test_live_codes.py tests/test_live_reconstruct.py
+
+docker:
+	docker build -t wp-api .

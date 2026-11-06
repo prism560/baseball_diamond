@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WP debug</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:16px;background:#fff;color:#111}
+#state{font-size:20px;margin:8px 0}#pct{font-size:32px;font-weight:600}
+canvas{border:1px solid #ccc;width:100%;max-width:900px;height:260px}
+table{border-collapse:collapse;font-size:12px}td,th{border:1px solid #ddd;padding:2px 6px}
+.rec{color:#b00}
+</style></head><body>
+<h3>WP debug</h3>
+<div>
+ replay: <select id="games"></select> speed <select id="speed"><option>1</option><option>5</option><option selected>20</option><option>max</option></select>
+ <button id="play">play</button> <button id="pause">pause</button> <button id="resume">resume</button>
+ seek seq <input id="seq" size="5"> <button id="seek">seek</button>
+ | live game id <input id="live" size="14"> <button id="watch">watch</button>
+</div>
+<div id="state"></div><div id="pct"></div><div id="ev"></div>
+<canvas id="c" width="900" height="260"></canvas>
+<h4>corrections</h4><table id="corr"><tr><th>point</th><th>kind</th><th>old</th><th>new</th><th>WP before</th><th>WP after</th></tr></table>
+<script>
+let ws=null, pts=[];
+const $=id=>document.getElementById(id);
+fetch('/replay/games').then(r=>r.json()).then(gs=>{gs.forEach(g=>{const o=document.createElement('option');o.value=g.game_id;
+ o.textContent=`${g.game_id} ${g.visitor}@${g.home} ${(g.tags||[]).join(',')}`;$('games').appendChild(o)})});
+function show(m){
+ if(m.type){ $('ev').textContent=m.type; return }
+ if(m.error){ $('ev').textContent=m.error; return }
+ $('state').textContent=`${m.status} ${m.half==='top'?'▲':'▼'}${m.inning} ${m.outs} out  bases ${m.bases.map(b=>b?'●':'○').join('')}  count ${m.count.join('-')}  ${m.away}-${m.home}  seq ${m.seq}`;
+ $('pct').innerHTML=`away ${m.pct_away}% · home ${m.pct_home}%  LED ${m.leds_home}  <span class="${m.recomputing?'rec':''}">model ${m.model}${m.recomputing?' (recomputing)':''}</span>`;
+ $('ev').textContent=`${m.batter||''} vs ${m.pitcher||''}: ${m.last_event||''}  wpa ${m.wpa_last==null?'':(100*m.wpa_last).toFixed(1)+'pp'}  if HR ${m.wp_if_hr==null?'':(100*m.wp_if_hr).toFixed(1)} if K ${m.wp_if_k==null?'':(100*m.wp_if_k).toFixed(1)}`;
+ if(m.replay_index!=null){ pts=pts.slice(0,m.replay_index); pts[m.replay_index]=m.wp_home } else pts.push(m.wp_home);
+ draw();
+}
+function draw(){const c=$('c'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.strokeStyle='#ccc';x.beginPath();x.moveTo(0,c.height/2);x.lineTo(c.width,c.height/2);x.stroke();
+ x.strokeStyle='#1565c0';x.beginPath();const n=Math.max(pts.length,2);pts.forEach((p,i)=>{const X=i/(n-1)*c.width,Y=(1-p)*c.height;i?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke()}
+function open(url){ if(ws) ws.close(); pts=[]; ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+url); ws.onmessage=e=>show(JSON.parse(e.data)) }
+function corr(gid){fetch(`/games/${gid}/corrections`).then(r=>r.json()).then(cs=>{const t=$('corr');t.querySelectorAll('tr.r').forEach(r=>r.remove());
+ cs.forEach(c=>{const r=t.insertRow();r.className='r';[c.key.join('/'),c.kind,c.last_event_old,c.last_event_new,c.wp_before,c.wp_after].forEach(v=>r.insertCell().textContent=(typeof v==='number')?v.toFixed(3):(v??''))})})}
+$('play').onclick=()=>{const g=$('games').value;open(`/ws/replay/${g}?speed=${$('speed').value}`);corr(g)};
+$('pause').onclick=()=>ws&&ws.send(JSON.stringify({cmd:'pause'}));
+$('resume').onclick=()=>ws&&ws.send(JSON.stringify({cmd:'resume'}));
+$('seek').onclick=()=>ws&&ws.send(JSON.stringify({cmd:'seek',seq:+$('seq').value}));
+$('watch').onclick=()=>{const g=$('live').value;open(`/ws/games/${g}`);corr(g)};
+</script></body></html>

@@ -1,0 +1,276 @@
+{
+ "games": {
+  "ARI202509160": {
+   "n_feed": 77,
+   "n_retro": 77,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776294
+  },
+  "SDN202509080": {
+   "n_feed": 74,
+   "n_retro": 74,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776407
+  },
+  "MIA202508230": {
+   "n_feed": 98,
+   "n_retro": 98,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776630
+  },
+  "KCA202508210": {
+   "n_feed": 80,
+   "n_retro": 80,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776657
+  },
+  "MIN202508190": {
+   "n_feed": 73,
+   "n_retro": 73,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776674
+  },
+  "CIN202508160": {
+   "n_feed": 91,
+   "n_retro": 91,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776721
+  },
+  "ANA202508120": {
+   "n_feed": 85,
+   "n_retro": 85,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776763
+  },
+  "ATL202508092": {
+   "n_feed": 79,
+   "n_retro": 79,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 776819
+  },
+  "LAN202507230": {
+   "n_feed": 75,
+   "n_retro": 75,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777022
+  },
+  "LAN202507220": {
+   "n_feed": 84,
+   "n_retro": 84,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777039
+  },
+  "ARI202507190": {
+   "n_feed": 74,
+   "n_retro": 74,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777081
+  },
+  "TOR202507050": {
+   "n_feed": 94,
+   "n_retro": 94,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777231
+  },
+  "TOR202507040": {
+   "n_feed": 74,
+   "n_retro": 74,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777242
+  },
+  "TBA202507020": {
+   "n_feed": 73,
+   "n_retro": 73,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777271
+  },
+  "TEX202506280": {
+   "n_feed": 76,
+   "n_retro": 76,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777322
+  },
+  "BAL202506270": {
+   "n_feed": 96,
+   "n_retro": 96,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777343
+  },
+  "SFN202506250": {
+   "n_feed": 86,
+   "n_retro": 86,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777355
+  },
+  "ATL202506140": {
+   "n_feed": 66,
+   "n_retro": 66,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777523
+  },
+  "MIN202506120": {
+   "n_feed": 91,
+   "n_retro": 91,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777533
+  },
+  "BAL202506120": {
+   "n_feed": 69,
+   "n_retro": 69,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777540
+  },
+  "CIN202506070": {
+   "n_feed": 79,
+   "n_retro": 79,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777612
+  },
+  "HOU202505300": {
+   "n_feed": 61,
+   "n_retro": 61,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777714
+  },
+  "BAL202505260": {
+   "n_feed": 70,
+   "n_retro": 70,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777771
+  },
+  "TOR202505220": {
+   "n_feed": 95,
+   "n_retro": 95,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777816
+  },
+  "DET202505120": {
+   "n_feed": 85,
+   "n_retro": 85,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777951
+  },
+  "CHA202505090": {
+   "n_feed": 76,
+   "n_retro": 76,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 777991
+  },
+  "PHI202505040": {
+   "n_feed": 96,
+   "n_retro": 96,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 778059
+  },
+  "MIN202504250": {
+   "n_feed": 79,
+   "n_retro": 79,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 778186
+  },
+  "KCA202504220": {
+   "n_feed": 82,
+   "n_retro": 82,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 778215
+  },
+  "TBA202504190": {
+   "n_feed": 87,
+   "n_retro": 87,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 778255
+  },
+  "BAL202504190": {
+   "n_feed": 88,
+   "n_retro": 88,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 778262
+  },
+  "ARI202504120": {
+   "n_feed": 74,
+   "n_retro": 74,
+   "field_mismatch": {},
+   "rows": [],
+   "pitch_count_mismatch": 0,
+   "gamePk": 778350
+  }
+ },
+ "summary": {
+  "games": 32,
+  "pa_retro": 2587,
+  "pa_feed": 2587,
+  "games_pa_count_equal": 32,
+  "rows_compared": 2587,
+  "rows_mismatch": 0,
+  "rows_convention": 0,
+  "pitch_count_mismatch": 0,
+  "games_exact": 32,
+  "row_mismatch_rate": 0.0,
+  "pitch_count_mismatch_rate": 0.0,
+  "unmapped_players": 0,
+  "id_map_size": 24672,
+  "field_mismatch": {}
+ }
+}
