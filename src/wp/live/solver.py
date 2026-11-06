@@ -57,6 +57,7 @@ class SyncSolver:
         self.results: dict = {}
         self.failed: dict = {}
         self.times: list = []          # (kind, seconds)
+        self.version = 0               # increases whenever results arrive (servers recompute on change)
 
     def request(self, key, kind, **kw):
         if key in self.results or key in self.failed:
@@ -122,6 +123,8 @@ class ProcessSolver(SyncSolver):
                 self.failed[key] = repr(e)
                 error("resolve_failed", key=str(key), err=repr(e))
             done.append(key)
+        if done:
+            self.version += 1
         return done
 
     def get(self, key):

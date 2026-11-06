@@ -71,6 +71,7 @@ class GameServer:
         self.info_level = "none"
         self.lat: list = []             # per-update processing seconds
         self.n_dup = self.n_stale = 0
+        self._solver_seen = 0
         self.meta: dict = {}
 
     # ---- setup -------------------------------------------------------------
@@ -144,9 +145,10 @@ class GameServer:
 
     def poll(self) -> list[dict]:
         """Finished solves -> recompute from the first provisional point."""
-        done = self.solver.poll()
-        if not done or self.view is None:
+        self.solver.poll()
+        if self.view is None or getattr(self.solver, "version", 0) == self._solver_seen:
             return []
+        self._solver_seen = self.solver.version
         k = next((i for i, v in enumerate(self.values) if v.AVG is None), None)
         if k is None:
             return []
@@ -213,6 +215,9 @@ class GameServer:
 
     def _value(self, p: dict, pc):
         view, M, b2 = self.view, self.M, self.b2
+        if p["phase"] == "pitch_end" and self.values:
+            prev = self.values[-1]          # result not applied yet: value unchanged until 'end'
+            return PointValue(prev.B3, prev.B2, prev.B2E, prev.AVG, dict(prev.if_hr), dict(prev.if_k)), pc
         row = self._row(p["pa_i"])
         inn, half = p["inning"], p["half"]
         diff = p["home"] - p["away"]

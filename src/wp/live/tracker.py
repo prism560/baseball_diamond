@@ -65,8 +65,9 @@ class PAContext:
     pitcher: str
 
 
-def _ver(cur: dict) -> str:
-    return hashlib.sha1(repr((cur["vis"], cur["home"])).encode()).hexdigest()[:12]
+def _ver(cur: dict, gid: str = "") -> str:
+    """Solve-cache key of a lineup state (game id included: same lineups, different game)."""
+    return hashlib.sha1(repr((gid, cur["vis"], cur["home"])).encode()).hexdigest()[:12]
 
 
 class LiveB3:
@@ -77,8 +78,9 @@ class LiveB3:
         self.g = dict(game)
         self.starters = dict(starters)
         self.ab = BG.Ablation()
+        self.gid = str(game.get("game_id", ""))
         cur = {"home": list(lineups["home"]), "vis": list(lineups["vis"])}
-        self.state = Committed(cur, {0: 0, 1: 0}, {0: 0, 1: 0}, {0: False, 1: False}, _ver(cur))
+        self.state = Committed(cur, {0: 0, 1: 0}, {0: 0, 1: 0}, {0: False, 1: False}, _ver(cur, self.gid))
         self.checkpoints = [copy.deepcopy(self.state)]
         self._gi = {}
         self._chain = {}
@@ -86,7 +88,7 @@ class LiveB3:
 
     # ---- inputs / solves ---------------------------------------------------
     def gi(self, cur: dict):
-        v = _ver(cur)
+        v = _ver(cur, self.gid)
         if v not in self._gi:
             gi, L = BG.game_inputs(self.ctx, self.g, cur, self.starters, self.ab)
             gi.xrule = self.xrule
@@ -95,7 +97,7 @@ class LiveB3:
 
     def _request_full(self, cur: dict, start):
         gi, _ = self.gi(cur)
-        key = ("full", _ver(cur), start)
+        key = ("full", _ver(cur, self.gid), start)
         self.solver.request(key, "full", gi=gi, start=start)
         return key
 
@@ -112,7 +114,7 @@ class LiveB3:
         slot = int(row["slot"]) - 1 if row["slot"] > 0 else st.nslot[half]
         if str(row["batter"]) != st.cur[side][slot] and row.get("o") != -1:
             st.cur[side][slot] = str(row["batter"])
-            st.lineup_ver = _ver(st.cur)
+            st.lineup_ver = _ver(st.cur, self.gid)
             st.full_start = (inn, half)
             self._request_full(st.cur, (inn, half))
         full_key = st.full_start

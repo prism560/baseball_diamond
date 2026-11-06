@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 
 from ..transitions import O_IDX
 from . import codes
-from .normalize import Event, Move, NormGame, Play
+from .normalize import Event, Move, NormGame, Play, _h
 
 BASE_BIT = {"1B": 1, "2B": 2, "3B": 4}
 BASE_NUM = {"1B": 1, "2B": 2, "3B": 3}
@@ -110,6 +110,7 @@ def reconstruct(g: NormGame) -> GameView:
     starter = dict(pitcher)
     rows, points = [], []
     over = False
+    xrule = g.game_type not in ("F", "D", "L", "W")
 
     def point(phase, key, pl: Play, ev: Event | None, last: str, pa_i: int, npitch: int, mid: bool, extra=None):
         p = {"key": key, "phase": phase, "ab": pl.ab, "pa_i": pa_i, "inning": st.inning, "half": st.half,
@@ -117,10 +118,12 @@ def reconstruct(g: NormGame) -> GameView:
              "balls": st.balls, "strikes": st.strikes, "batter": pl.batter,
              "pitcher": pitcher[_side(st.half, False)], "n_pitch": npitch, "mid": mid,
              "ts": ev.ts if ev is not None else pl.ts, "last_event": last,
-             "hash": ev.hash if ev is not None else pl.hash,
              "overturned": bool(ev.overturned) if ev is not None else False}
         if extra:
             p.update(extra)
+        # content hash: the event itself + the state after it (duplicates vs corrections)
+        p["hash"] = _h([phase, ev.hash if ev is not None else None, p["outs"], p["bases"], p["away"], p["home"],
+                        p["balls"], p["strikes"], p["batter"], p["pitcher"], p.get("o")])
         points.append(p)
 
     for pl in g.plays:
@@ -128,6 +131,10 @@ def reconstruct(g: NormGame) -> GameView:
             break
         if (pl.inning, pl.half) != (st.inning, st.half):
             st.inning, st.half, st.outs, st.occ = pl.inning, pl.half, 0, {}
+            if xrule and pl.inning > g.scheduled_innings:
+                # automatic runner (regular season): known before the feed publishes the
+                # runner_placed event; a placeholder id, replaced when the event arrives
+                st.occ[2] = -1
         st.balls = st.strikes = 0
         bat_side, fld_side = _side(pl.half, True), _side(pl.half, False)
         pa_i = len(rows)
@@ -179,9 +186,16 @@ def reconstruct(g: NormGame) -> GameView:
             if ev.kind == "pitch":
                 npitch += 1
                 chars.append(ev.rchar)
-                st.balls, st.strikes = min(ev.balls, 3), min(ev.strikes, 2)
+                if not _ends_pa(ev):
+                    st.balls, st.strikes = min(ev.balls, 3), min(ev.strikes, 2)
             elif ev.kind == "pickoff":
                 chars.append(ev.rchar)
+            terminal = ev.kind == "pitch" and (ev.key in res_keys or _ends_pa(ev))
+            if terminal:
+                # the pitch that ends the PA: shown before its result is applied (the result
+                # movements, possibly published later, belong to the 'end' point)
+                point("pitch_end", ev.key, pl, ev, ev.description or "", pa_i, npitch, mid_seen)
+                continue
             if ev.key in res_keys:
                 continue                                      # applied with the PA result
             if ev.moves and ev.kind != "pitch":
@@ -265,6 +279,11 @@ def _result_events(pl: Play) -> set:
                 all(m.event_type == pl.result_type for m in ev.moves):
             keys.add(ev.key)
     return keys
+
+
+def _ends_pa(ev: Event) -> bool:
+    """Pitch that ends the PA by itself (feed count after it shows ball four / strike three)."""
+    return ev.pclass in ("in_play", "hbp") or ev.balls >= 4 or ev.strikes >= 3
 
 
 def _last_pitch(pl: Play) -> Event | None:

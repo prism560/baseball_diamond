@@ -193,8 +193,10 @@ def normalize(feed: dict) -> NormGame:
                     ev.player, ev.base = pid, e.get("base", 2)
                     if pid and not ev.moves:
                         ev.moves = [Move(int(pid), None, b, False, "runner_placed")]
+            # runner movements are not part of the event hash: their effect is in the state
+            # carried by the point hash (wp.live.reconstruct), and result movements may be
+            # published after the pitch itself
             ev.hash = _h([ev.kind, ev.code, ev.balls, ev.strikes, ev.outs,
-                          [(m.runner, m.start, m.end, m.is_out) for m in ev.moves],
                           ev.player, ev.replaced, ev.batting_order, ev.position, ev.base])
             evs.append(ev)
         extra = [m for k, ms in mv.items() if k not in idxs for m in ms]
