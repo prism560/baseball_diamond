@@ -1,0 +1,343 @@
+{
+ "n_games": 79,
+ "n_errors": 0,
+ "n_regular": 32,
+ "n_postseason": 47,
+ "crosscheck": {
+  "games": 32,
+  "pa_retro": 2587,
+  "pa_feed": 2587,
+  "games_pa_count_equal": 32,
+  "rows_compared": 2587,
+  "rows_mismatch": 0,
+  "rows_convention": 0,
+  "pitch_count_mismatch": 0,
+  "games_exact": 32,
+  "row_mismatch_rate": 0.0,
+  "pitch_count_mismatch_rate": 0.0,
+  "unmapped_players": 0,
+  "id_map_size": 24672,
+  "field_mismatch": {}
+ },
+ "offline": {
+  "pa:strict": {
+   "n": 2586,
+   "B3": {
+    "max_abs": 0.0,
+    "n_over_tol": 0
+   },
+   "B2E": {
+    "max_abs": 2.220446049250313e-16,
+    "n_over_tol": 0
+   },
+   "AVG": {
+    "max_abs": 2.220446049250313e-16,
+    "n_over_tol": 0
+   }
+  },
+  "pitch:strict": {
+   "n": 7235,
+   "B3": {
+    "max_abs": 0.0,
+    "n_over_tol": 0
+   },
+   "B2E": {
+    "max_abs": 0.0,
+    "n_over_tol": 0
+   },
+   "AVG": {
+    "max_abs": 0.0,
+    "n_over_tol": 0
+   }
+  },
+  "pitch:after_runner_event": {
+   "n": 135,
+   "B3": {
+    "max_abs": 0.26477420147160136,
+    "n_over_tol": 135
+   },
+   "B2E": {
+    "max_abs": 0.2714173250113063,
+    "n_over_tol": 135
+   },
+   "AVG": {
+    "max_abs": 0.26724681177221604,
+    "n_over_tol": 135
+   }
+  },
+  "pa:mid_pa_pitching_change": {
+   "n": 1,
+   "B3": {
+    "max_abs": 0.014828376471996307,
+    "n_over_tol": 1
+   },
+   "B2E": {
+    "max_abs": 0.0,
+    "n_over_tol": 0
+   },
+   "AVG": {
+    "max_abs": 0.008399839410647467,
+    "n_over_tol": 1
+   }
+  },
+  "pitch:mid_pa_pitching_change": {
+   "n": 5,
+   "B3": {
+    "max_abs": 0.019564774438252386,
+    "n_over_tol": 5
+   },
+   "B2E": {
+    "max_abs": 0.0,
+    "n_over_tol": 0
+   },
+   "AVG": {
+    "max_abs": 0.011469127471566809,
+    "n_over_tol": 5
+   }
+  }
+ },
+ "after_runner_event": {
+  "n": 135,
+  "mean_abs": 0.03107272915355147,
+  "max_abs": 0.26724681177221604,
+  "share_gt_2.5pp": 0.2740740740740741
+ },
+ "lineup_first_appearance_differs": [],
+ "games_with_strict_mismatch": [],
+ "final_ok": 79,
+ "final_fail": [],
+ "corrections_clean_total": 0,
+ "faults": {
+  "final_equal": 79,
+  "games": 79,
+  "missing_points": 0,
+  "state_diff": 0,
+  "max_abs_wp_diff": 0,
+  "snapshots_delivered": 26860,
+  "net_errors": 1200,
+  "stale_dropped": 2127,
+  "duplicates": 3092,
+  "corrections_logged": 207
+ },
+ "real": [
+  {
+   "game_id": "CLE202510010",
+   "gamePk": 813071,
+   "n_snapshots": 511,
+   "points_synthetic": 493,
+   "points_real": 493,
+   "missing": 0,
+   "state_diff": 1,
+   "max_abs_wp_diff": 0.0,
+   "final_equal": true,
+   "corrections": 3,
+   "overturned": 0,
+   "corrections_detail": [
+    {
+     "key": [
+      "47",
+      "s"
+     ],
+     "kind": "changed",
+     "last_event_old": "",
+     "last_event_new": "",
+     "wp_before": 0.549496758983675,
+     "wp_after": 0.5467960696882265,
+     "wp_delta": -0.002700689295448533
+    },
+    {
+     "key": [
+      "47",
+      "0"
+     ],
+     "kind": "changed",
+     "last_event_old": "Offensive Substitution: Pinch-hitter Johnathan Rodr\u00edguez replaces George Valera.",
+     "last_event_new": "Offensive Substitution: Pinch-hitter Johnathan Rodr\u00edguez replaces George Valera.",
+     "wp_before": 0.549496758983675,
+     "wp_after": 0.5467960696882265,
+     "wp_delta": -0.002700689295448533
+    },
+    {
+     "key": [
+      "53",
+      "s"
+     ],
+     "kind": "changed",
+     "last_event_old": "",
+     "last_event_new": "",
+     "wp_before": 0.389065804216329,
+     "wp_after": 0.38951534603017074,
+     "wp_delta": 0.000449541813841714
+    }
+   ],
+   "latency": {
+    "n": 511,
+    "median_ms": 5.6269490000886435,
+    "p95_ms": 13.89421550015868,
+    "max_ms": 3307.090125999821
+   }
+  },
+  {
+   "game_id": "CLE202510020",
+   "gamePk": 813073,
+   "n_snapshots": 472,
+   "points_synthetic": 459,
+   "points_real": 459,
+   "missing": 0,
+   "state_diff": 0,
+   "max_abs_wp_diff": 0.0,
+   "final_equal": true,
+   "corrections": 0,
+   "overturned": 0,
+   "corrections_detail": [],
+   "latency": {
+    "n": 472,
+    "median_ms": 5.062280000174724,
+    "p95_ms": 12.32846880002398,
+    "max_ms": 19.862598000145226
+   }
+  },
+  {
+   "game_id": "LAN202510090",
+   "gamePk": 813042,
+   "n_snapshots": 562,
+   "points_synthetic": 532,
+   "points_real": 532,
+   "missing": 0,
+   "state_diff": 0,
+   "max_abs_wp_diff": 0.0,
+   "final_equal": true,
+   "corrections": 1,
+   "overturned": 0,
+   "corrections_detail": [
+    {
+     "key": [
+      "67",
+      "s"
+     ],
+     "kind": "changed",
+     "last_event_old": "",
+     "last_event_new": "",
+     "wp_before": 0.6420018073545173,
+     "wp_after": 0.648489200021293,
+     "wp_delta": 0.006487392666775671
+    }
+   ],
+   "latency": {
+    "n": 562,
+    "median_ms": 6.124202000137302,
+    "p95_ms": 13.269675300034569,
+    "max_ms": 1232.6157439997587
+   }
+  }
+ ],
+ "latency_ms": {
+  "clean_sync_median_of_games": {
+   "n": 79,
+   "median": 5.919315000028291,
+   "p95": 7.0813416999953915,
+   "max": 9.524836999958097
+  },
+  "clean_sync_p95_of_games": {
+   "n": 79,
+   "median": 14.674492199901575,
+   "p95": 24.30966080004959,
+   "max": 216.62655299996914
+  },
+  "faults_sync_max_of_games": {
+   "n": 79,
+   "median": 27.070272999935696,
+   "p95": 84.63184229995022,
+   "max": 93.61077399989881
+  },
+  "async_median_of_games": {
+   "n": 8,
+   "median": 4.364547500017579,
+   "p95": 5.001829200125485,
+   "max": 5.209445000218693
+  },
+  "async_p95_of_games": {
+   "n": 8,
+   "median": 8.082792174940323,
+   "p95": 8.68939724005031,
+   "max": 8.836437699983433
+  },
+  "async_max_of_games": {
+   "n": 8,
+   "median": 23.16394249987752,
+   "p95": 27.666637899937996,
+   "max": 28.390131999913137
+  }
+ },
+ "async": {
+  "games": [
+   "ANA202508120",
+   "BAL202504190",
+   "BAL202506270",
+   "CIN202508160",
+   "KCA202508210",
+   "LAN202507220",
+   "MIA202508230",
+   "TOR202505220"
+  ],
+  "final_equal": 8,
+  "max_abs_wp_diff_vs_sync": 0,
+  "recomputing_share": 0.5001119613957108,
+  "resolve_compute_s": {
+   "n": 208,
+   "median": 0.232,
+   "p95": 4.08929999999998,
+   "max": 6.309
+  },
+  "resolve_wall_s": {
+   "n": 208,
+   "median": 7.526999999999999,
+   "p95": 13.184949999999999,
+   "max": 21.196
+  }
+ },
+ "solve_s": {
+  "pregame": {
+   "n": 79,
+   "median": 5.371,
+   "p95": 5.6901,
+   "max": 6.152
+  },
+  "lineup_change": {
+   "n": 212,
+   "median": 1.8045,
+   "p95": 3.564899999999994,
+   "max": 4.797
+  },
+  "pitching_change": {
+   "n": 1347,
+   "median": 0.219,
+   "p95": 0.5587000000000001,
+   "max": 1.139
+  },
+  "per_game_total": {
+   "n": 79,
+   "median": 14.636,
+   "p95": 24.323999999999998,
+   "max": 26.816
+  }
+ },
+ "offline_eval": {
+  "pregame_s": {
+   "n": 32,
+   "median": 5.718372464179993,
+   "p95": 6.359255516529084,
+   "max": 6.437260866165161
+  },
+  "resolves_per_game": 15.28125
+ },
+ "warnings": {
+  "pregame_solve_requested": 169,
+  "feed_correction": 211,
+  "feed_fetch_error": 1200,
+  "resolve_submitted": 208
+ },
+ "errors": [],
+ "timeline_cache_bytes": 1930647,
+ "timeline_cache_files": 79
+}

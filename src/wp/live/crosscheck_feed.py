@@ -104,6 +104,11 @@ def main() -> None:
     res["summary"] = s
     a.out.parent.mkdir(exist_ok=True)
     a.out.write_text(json.dumps(res, indent=1, default=str))
+    from ..manifest import ROOT, write_meta
+    live = ROOT / "src" / "wp" / "live"
+    write_meta([a.out], [Path("data/processed/pa.parquet"), a.feeds / "index.json"], "live_crosscheck",
+               [live / f for f in ("crosscheck_feed.py", "normalize.py", "reconstruct.py", "codes.py", "ids.py",
+                                   "pa_from_feed.py")])
     print(json.dumps(s, indent=1))
 
 

@@ -132,6 +132,13 @@ def main() -> None:
     res["timeline_cache_files"] = len(list(tl.glob("*.json.gz"))) if tl.exists() else 0
     OUT_JSON.write_text(json.dumps(res, indent=1, default=float))
     OUT_MD.write_text(render(res, ok))
+    from ..manifest import ROOT, write_meta
+    live = ROOT / "src" / "wp" / "live"
+    write_meta([OUT_JSON, OUT_MD], [Path("reports/live_crosscheck.json")] + sorted(RUNS.glob("*.json")),
+               "live_report", [live / f for f in ("report_realtime.py", "serving.py", "tracker.py", "replay.py",
+                                                   "models.py", "offline_ref.py", "validate_offline.py",
+                                                   "reconstruct.py", "normalize.py", "codes.py")]
+               + [ROOT / "scripts" / "replay.py"])
     print(OUT_MD, OUT_JSON)
 
 
@@ -174,7 +181,7 @@ def render(r: dict, runs: list) -> str:
     a("  - 따라서 이 비교는 정규화와 상태 재구성의 정확성을 검증한다.")
     a("- **엄격 비교 대상**: 타석 시작 시점, 그리고 타석 중 주자 이벤트 전의 투구 시점.")
     a("")
-    a("| 비교 | 시점 수 | B3 최대 |차| | B2E 최대 |차| | AVG 최대 |차| | 1e-6 초과 |")
+    a("| 비교 | 시점 수 | B3 최대 절대차 | B2E 최대 절대차 | AVG 최대 절대차 | 1e-6 초과 |")
     a("|---|---:|---:|---:|---:|---:|")
     names = {"pa:strict": "타석 시작", "pitch:strict": "투구(주자 이벤트 전)",
              "pa:mid_pa_pitching_change": "타석 시작, 타석 중 투수 교체(의도된 차이)",
@@ -233,6 +240,14 @@ def render(r: dict, runs: list) -> str:
         a(f"| {x['game_id']} ({x['gamePk']}) | {x['n_snapshots']} | {x['points_synthetic']}/{x['points_real']} | "
           f"{x['missing']} | {x['state_diff']} | {fmt(x['max_abs_wp_diff'])} | {'예' if x['final_equal'] else '아니오'} | "
           f"{x['corrections']} ({x['overturned']}) |")
+    a("")
+    a("- **합성 대조**: 세 경기 모두 시점 집합이 같고, 최종 값과 WP가 합성 재생과 일치한다(WP 최대 차이 0).")
+    a("  - CLE202510010의 상태 차이 1건은 정정으로 바뀐 중간 시점이다. 최종 값은 같다.")
+    a("- **챌린지 번복**: 실제 스냅샷에서 번복이 정정으로 나타나지 않았다.")
+    a("  - 813071 4회말 태그 플레이 번복을 타임코드별로 보면, 리뷰 동안 그 플레이는 미완료 상태다.")
+    a("  - 리뷰가 끝난 뒤 번복된 결과로 처음 완료된다(`reviewDetails.isOverturned: true`). 원래 판정은 피드에 게시되지 않았다.")
+    a("  - 따라서 정정 처리(같은 키, 새 해시 → 다시 계산하고 정정 기록)는 4절의 정정 주입으로 검증했다.")
+    a("- **실제 피드에서 기록된 정정**: 대타가 타석 시작보다 늦게 게시된 경우다. 타석 시작 시점의 타자가 바뀌었다.")
     a("")
     a("**실제 스냅샷에서 기록된 정정**(일부)")
     a("")
